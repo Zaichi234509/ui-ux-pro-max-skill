@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hu Tao | Wangsheng Funeral Parlor — Premium 3D Story Experience</title>
+
+  <!-- Google Fonts: Elegant Poetic Serif + Clean Sans (UI/UX Pro Max Art Deco Pairing) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600;700;800&family=Ma+Shan+Zheng&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- Three.js for 3D Scene -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- GSAP & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ===========================================
+       HU TAO — WANGSHENG FUNERAL PARLOR THEME TOKENS
+       Using UI/UX Pro Max Design Intelligence:
+       - Style: 3D & Hyperrealism + Parallax Storytelling
+       - Colors: Dark Crimson, Obsidian Black, Gold Accent
+       - Typography: Playfair Display (elegant serif) + Inter (clean sans)
+       - Pattern: Scroll-Triggered Storytelling
+    =========================================== */
+    :root {
+      --primary: #DC2626;
+      --primary-hover: #B91C1C;
+      --primary-light: rgba(220, 38, 38, 0.15);
+      --primary-glow: rgba(220, 38, 38, 0.6);
+
+      --accent-gold: #D4A017;
+      --accent-gold-light: rgba(212, 160, 23, 0.3);
+      --accent-amber: #F59E0B;
+
+      --flame-blue: #38BDF8;
+      --flame-blue-glow: rgba(56, 189, 248, 0.3);
+
+      --bg-dark: #0A0A0A;
+      --bg-card: #111111;
+      --bg-section: #0D0D0D;
+      --bg-section-alt: #141010;
+
+      --text-main: #F5F5F5;
+      --text-muted: #A3A3A3;
+      --text-dim: #525252;
+      --text-gold: #FCD34D;
+
+      --border-color: rgba(220, 38, 38, 0.2);
+      --border-gold: rgba(212, 160, 23, 0.3);
+
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+
+      --shadow-card: 0 4px 20px rgba(0,0,0,0.4);
+      --shadow-glow-red: 0 0 30px rgba(220, 38, 38, 0.3);
+      --shadow-glow-gold: 0 0 30px rgba(212, 160, 23, 0.2);
+
+      --transition-smooth: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      --transition-ease: all 0.3s ease;
+
+      --font-display: 'Playfair Display', serif;
+      --font-body: 'Inter', sans-serif;
+      --font-calligraphy: 'Ma Shan Zheng', cursive;
+      --font-serif: 'Crimson Text', serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-family: var(--font-body);
+      color: var(--text-main);
+      background-color: var(--bg-dark);
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-dark);
+      position: relative;
+    }
+
+    /* ========== CUSTOM SCROLLBAR ========== */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--primary-hover); }
+
+    /* ========== FLOATING PARTICLES BG ========== */
+    .particles-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .particle-orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(40px);
+      opacity: 0.15;
+      animation: floatParticle 20s infinite ease-in-out;
+    }
+
+    @keyframes floatParticle {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.1; }
+      25% { transform: translateY(-30vh) translateX(5vw) scale(1.2); opacity: 0.2; }
+      50% { transform: translateY(-50vh) translateX(-5vw) scale(0.9); opacity: 0.15; }
+      75% { transform: translateY(-20vh) translateX(3vw) scale(1.1); opacity: 0.2; }
+    }
+
+    .butterfly-float {
+      position: fixed;
+      font-size: 1.4rem;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.3;
+      animation: butterflyPath 15s infinite linear;
+    }
+
+    @keyframes butterflyPath {
+      0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.4; }
+      90% { opacity: 0.4; }
+      100% { transform: translate(100vw, -50vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* ========== SCROLL PROGRESS BAR ========== */
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      width: 0%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent-gold), var(--primary));
+      z-index: 10000;
+      transition: width 0.1s linear;
+    }
+
+    /* ========== NAVBAR ========== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 9000;
+      padding: 16px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 10, 10, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(220, 38, 38, 0.1);
+      transition: var(--transition-ease);
+    }
+
+    .navbar.scrolled {
+      background: rgba(10, 10, 10, 0.9);
+      border-bottom-color: rgba(220, 38, 38, 0.3);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--accent-gold));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: var(--transition-ease);
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-main);
+    }
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-cta {
+      padding: 10px 24px;
+      background: linear-gradient(135deg, var(--primary), #991B1B);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .nav-cta:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-glow-red);
+    }
+
+    /* ========== SECTION BASE ========== */
+    section {
+      position: relative;
+      z-index: 10;
+    }
+
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: var(--primary);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    /* ========== HERO SECTION ========== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 0 48px;
+    }
+
+    .hero-bg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .hero-bg-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.4;
+      filter: brightness(0.3) saturate(1.2);
+    }
+
+    .hero-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(
+        180deg,
+        rgba(10, 10, 10, 0.3) 0%,
+        rgba(10, 10, 10, 0.6) 40%,
+        var(--bg-dark) 100%
+      );
+      z-index: 1;
+    }
+
+    .hero-overlay-top {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 40%;
+      background: linear-gradient(180deg, rgba(10,10,10,0.8) 0%, transparent 100%);
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 50px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-gold);
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+      background: rgba(220,38,38,0.08);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 800;
+      line-height: 1.05;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-title .highlight-red {
+      background: linear-gradient(135deg, var(--primary), #EF4444);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-title .highlight-gold {
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-amber));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle-cn {
+      font-family: var(--font-calligraphy);
+      font-size: clamp(1.5rem, 3vw, 2.8rem);
+      color: var(--text-gold);
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 1.5vw, 1.3rem);
+      color: var(--text-muted);
+      font-weight: 300;
+      max-width: 600px;
+      margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      padding: 14px 36px;
+      background: linear-gradient(135deg, var(--primary), #991B1B);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow-red);
+    }
+
+    .btn-secondary {
+      padding: 14px 36px;
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      background: rgba(220,38,38,0.1);
+    }
+
+    .hero-scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      animation: bounceIndicator 2s infinite;
+    }
+
+    @keyframes bounceIndicator {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(180deg, var(--primary), transparent);
+    }
+
+    /* ========== 3D SCENE SECTION ========== */
+    .scene-3d-section {
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-dark);
+    }
+
+    .scene-3d-section .section-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .scene-3d-label {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      color: var(--primary);
+      margin-bottom: 12px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .scene-3d-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      color: var(--text-main);
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      max-width: 700px;
+      padding: 0 24px;
+    }
+
+    .scene-3d-title em {
+      color: var(--primary);
+      font-style: normal;
+    }
+
+    #three-container {
+      width: 100%;
+      height: 100vh;
+      display: block;
+      cursor: grab;
+    }
+
+    #three-container:active {
+      cursor: grabbing;
+    }
+
+    .scene-ui-overlay {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .scene-btn {
+      padding: 8px 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50px;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: var(--transition-ease);
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.05em;
+    }
+
+    .scene-btn:hover {
+      border-color: var(--primary);
+      color: var(--text-main);
+      background: rgba(220,38,38,0.1);
+    }
+
+    .scene-btn.active {
+      border-color: var(--primary);
+      color: var(--text-main);
+      background: rgba(220,38,38,0.15);
+      box-shadow: 0 0 15px rgba(220,38,38,0.2);
+    }
+
+    .badge-3d {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      backdrop-filter: blur(12px);
+      font-family: var(--font-body);
+      font-weight: 500;
+    }
+
+    .badge-3d.pyro {
+      background: rgba(220,38,38,0.15);
+      border: 1px solid rgba(220,38,38,0.3);
+      color: #FCA5A5;
+    }
+
+    .badge-3d.butterfly {
+      background: rgba(56,189,248,0.15);
+      border: 1px solid rgba(56,189,248,0.3);
+      color: #7DD3FC;
+    }
+
+    /* ========== STORY CHAPTERS ========== */
+    .story-section {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 120px 48px;
+      background: var(--bg-section);
+    }
+
+    .story-section:nth-child(even) {
+      background: var(--bg-section-alt);
+    }
+
+    .story-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .story-container.reverse {
+      direction: rtl;
+    }
+
+    .story-container.reverse > * {
+      direction: ltr;
+    }
+
+    .story-content {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+
+    .story-chapter-number {
+      font-family: var(--font-display);
+      font-size: 5rem;
+      font-weight: 800;
+      color: rgba(220,38,38,0.08);
+      line-height: 1;
+      margin-bottom: -20px;
+    }
+
+    .story-chapter-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 2.5vw, 2.8rem);
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .story-chapter-title-cn {
+      font-family: var(--font-calligraphy);
+      font-size: clamp(1.2rem, 1.8vw, 1.8rem);
+      color: var(--text-gold);
+      opacity: 0.6;
+      margin-bottom: 16px;
+    }
+
+    .story-chapter-text {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.8;
+      margin-bottom: 24px;
+      font-weight: 300;
+    }
+
+    .story-chapter-text .poem {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--text-gold);
+      font-size: 1.1rem;
+      line-height: 1.9;
+      border-left: 2px solid var(--primary);
+      padding-left: 20px;
+      margin: 20px 0;
+    }
+
+    .story-visual {
+      opacity: 0;
+      transform: scale(0.92);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .story-visual-img {
+      width: 100%;
+      height: auto;
+      border-radius: var(--radius-lg);
+      display: block;
+      box-shadow: var(--shadow-card), var(--shadow-glow-red);
+    }
+
+    .story-visual-caption {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .story-divider {
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--primary), transparent);
+      margin: 24px 0;
+    }
+
+    .story-stats {
+      display: flex;
+      gap: 32px;
+      margin-top: 16px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* ========== QUOTE FULLSCREEN ========== */
+    .quote-section {
+      min-height: 70vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 48px;
+      position: relative;
+      background: linear-gradient(135deg, #0A0A0A 0%, #1A0A0A 50%, #0A0A0A 100%);
+    }
+
+    .quote-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(ellipse at center, rgba(220,38,38,0.05) 0%, transparent 70%);
+    }
+
+    .quote-content {
+      position: relative;
+      z-index: 2;
+      max-width: 800px;
+    }
+
+    .quote-mark {
+      font-family: var(--font-display);
+      font-size: 6rem;
+      line-height: 0.5;
+      color: var(--primary);
+      opacity: 0.2;
+      margin-bottom: 24px;
+    }
+
+    .quote-text {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+      font-style: italic;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      font-weight: 400;
+    }
+
+    .quote-text-cn {
+      font-family: var(--font-calligraphy);
+      font-size: clamp(1.2rem, 2vw, 2rem);
+      color: var(--text-gold);
+      opacity: 0.6;
+      margin-bottom: 16px;
+    }
+
+    .quote-author {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* ========== ABILITIES SECTION ========== */
+    .abilities-section {
+      padding: 120px 48px;
+      background: var(--bg-section);
+    }
+
+    .abilities-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 3.5vw, 3.5rem);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 300;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .abilities-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .ability-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 40px 32px;
+      text-align: center;
+      transition: var(--transition-ease);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ability-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent-gold));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .ability-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .ability-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-glow-red);
+    }
+
+    .ability-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    .ability-name {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .ability-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    /* ========== GALLERY HORIZONTAL ========== */
+    .gallery-section {
+      padding: 120px 0;
+      background: var(--bg-section-alt);
+      overflow: hidden;
+    }
+
+    .gallery-header {
+      padding: 0 48px;
+      margin-bottom: 48px;
+    }
+
+    .gallery-track {
+      display: flex;
+      gap: 24px;
+      padding: 0 48px;
+      animation: galleryScroll 30s linear infinite;
+    }
+
+    @keyframes galleryScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(calc(-300px * 4 - 24px * 4)); }
+    }
+
+    .gallery-item {
+      min-width: 280px;
+      height: 360px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+      border: 1px solid var(--border-color);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.08);
+    }
+
+    .gallery-item-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+    }
+
+    .gallery-item-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    /* ========== FINAL CTA / FOOTER ========== */
+    .final-cta {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 48px;
+      position: relative;
+      background: linear-gradient(135deg, #0A0A0A 0%, #1A0A0A 50%, #0A0A0A 100%);
+    }
+
+    .final-cta-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 4rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .final-cta-sub {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 500px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border-color);
+      padding: 32px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .footer-socials {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-socials a {
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: var(--transition-ease);
+    }
+
+    .footer-socials a:hover {
+      color: var(--primary);
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 968px) {
+      .navbar {
+        padding: 12px 20px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding: 0 24px;
+      }
+
+      .hero-title {
+        font-size: clamp(2.2rem, 6vw, 3.5rem);
+      }
+
+      .story-container,
+      .story-container.reverse {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        direction: ltr;
+      }
+
+      .story-section {
+        padding: 80px 24px;
+      }
+
+      .abilities-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .scene-ui-overlay {
+        bottom: 20px;
+        gap: 8px;
+      }
+
+      .scene-btn {
+        font-size: 0.65rem;
+        padding: 6px 12px;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px 20px;
+      }
+
+      .story-stats {
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-title {
+        font-size: 2rem;
+      }
+
+      .hero-subtitle-cn {
+        font-size: 1.2rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .section-title {
+        font-size: 1.8rem;
+      }
+
+      .quote-text {
+        font-size: 1.2rem;
+      }
+
+      .gallery-item {
+        min-width: 200px;
+        height: 260px;
+      }
+    }
+
+    /* ========== REDUCED MOTION ========== */
+    @media (prefers-reduced-motion: reduce) {
+      .hero-scroll-indicator,
+      .butterfly-float,
+      .particle-orb { animation: none; }
+
+      .gallery-track {
+        animation: none;
+        overflow-x: auto;
+      }
+
+      .scroll-progress { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Scroll Progress Bar -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
+  <!-- Floating Background Particles -->
+  <div class="particles-overlay" id="particlesOverlay"></div>
+
+  <!-- Floating Butterflies -->
+  <div class="butterfly-float" style="bottom:20%;left:10%;">🦋</div>
+  <div class="butterfly-float" style="bottom:50%;left:5%;animation-delay:5s;">🦋</div>
+  <div class="butterfly-float" style="bottom:80%;left:15%;animation-delay:10s;">🦋</div>
+  <div class="butterfly-float" style="top:30%;right:10%;animation-delay:3s;">🦋</div>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" id="navbar">
+    <a href="#" class="nav-brand">
+      <span class="nav-brand-icon">🌺</span>
+      Wangsheng Funeral Parlor
+    </a>
+    <ul class="nav-links">
+      <li><a href="#story">Story</a></li>
+      <li><a href="#abilities">Abilities</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="nav-cta" onclick="document.getElementById('story').scrollIntoView({behavior:'smooth'})">
+      Begin Journey
+    </button>
+  </nav>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <img src="images/hu-tao-hero.jpg" alt="Hu Tao" class="hero-bg-img">
+      <div class="hero-overlay"></div>
+      <div class="hero-overlay-top"></div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge">𑁍 Genshin Impact · 5-Star Pyro Character</div>
+      <h1 class="hero-title">
+        <span class="highlight-red">Hu Tao</span><br>
+        <span class="highlight-gold">胡桃</span>
+      </h1>
+      <div class="hero-subtitle-cn">往生堂第七十七代堂主</div>
+      <p class="hero-subtitle">
+        "Welcome, welcome! Don't be nervous — death is just part of life's great journey.
+        Come, let me show you the beauty in every farewell."
+      </p>
+      <div class="hero-actions">
+        <a href="#story" class="btn-primary">
+          <span>▼</span> Explore Her Story
+        </a>
+        <a href="#scene-3d" class="btn-secondary">
+          <span>✦</span> View 3D Model
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-scroll-indicator">
+      <span>Scroll to explore</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ========== 3D SCENE ========== -->
+  <section class="scene-3d-section" id="scene-3d">
+    <div id="three-container"></div>
+    <div class="section-overlay">
+      <div class="scene-3d-label" id="sceneLabel">Interactive 3D Experience</div>
+      <div class="scene-3d-title" id="sceneTitle">
+        The <em>Staff of Homa</em> — Hu Tao's Signature Polearm
+      </div>
+    </div>
+    <div class="badge-3d pyro" id="badge-3d">🔥 Pyro Mode: Spirit of Embers</div>
+    <div class="scene-ui-overlay">
+      <button class="scene-btn active" id="btn-pyro" onclick="switchMode('pyro')">🔥 Pyro</button>
+      <button class="scene-btn" id="btn-butterfly" onclick="switchMode('butterfly')">🦋 Butterfly</button>
+      <button class="scene-btn" id="btn-rotate" onclick="toggleRotate()">⟳ Auto-Rotate</button>
+      <button class="scene-btn" id="btn-particles" onclick="toggleParticles()">✦ Particles</button>
+    </div>
+  </section>
+
+  <!-- ========== STORY CHAPTER 1 ========== -->
+  <section class="story-section" id="story">
+    <div class="story-container">
+      <div class="story-content" data-reveal>
+        <div class="story-chapter-number">01</div>
+        <div class="story-divider"></div>
+        <div class="story-chapter-title">The 77th Director</div>
+        <div class="story-chapter-title-cn">第七十七代堂主</div>
+        <p class="story-chapter-text">
+          Hu Tao is the 77th director of the Wangsheng Funeral Parlor — a position she inherited 
+          at a remarkably young age. Despite the somber nature of her work, she approaches every 
+          funeral with a unique blend of solemn respect and lively enthusiasm, believing that 
+          death is merely another chapter in the grand story of existence.
+        </p>
+        <p class="story-chapter-text">
+          As a poet at heart, she composes elegiac couplets for each soul she escorts to the 
+          afterlife, finding beauty in the spaces between life and death.
+        </p>
+        <div class="story-stats">
+          <div class="stat-item">
+            <div class="stat-number">7th</div>
+            <div class="stat-label">Generation</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">77th</div>
+            <div class="stat-label">Director</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">∞</div>
+            <div class="stat-label">Poems Written</div>
+          </div>
+        </div>
+      </div>
+      <div class="story-visual" data-reveal>
+        <img src="images/hu-tao-bloom.jpg" alt="Hu Tao Portrait" class="story-visual-img">
+        <div class="story-visual-caption">"The boundary between life and death is but a thin veil."</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== QUOTE ========== -->
+  <section class="quote-section">
+    <div class="quote-content" data-reveal>
+      <div class="quote-mark">"</div>
+      <div class="quote-text-cn">人生自古谁无死，尔等皆是蓬蒿人</div>
+      <div class="quote-text">
+        "Since time immemorial, who has escaped death?<br>
+        Let them all be but common weeds in the wild."
+      </div>
+      <div class="quote-author">— Hu Tao · Wangsheng Funeral Parlor</div>
+    </div>
+  </section>
+
+  <!-- ========== STORY CHAPTER 2 ========== -->
+  <section class="story-section">
+    <div class="story-container reverse">
+      <div class="story-content" data-reveal>
+        <div class="story-chapter-number">02</div>
+        <div class="story-divider"></div>
+        <div class="story-chapter-title">A Heart of Mischief</div>
+        <div class="story-chapter-title-cn">淘气之心</div>
+        <p class="story-chapter-text">
+          Behind her professional facade lies an irrepressible prankster. Hu Tao delights in 
+          startling her friends with sudden appearances, composing cheeky limericks about her 
+          clients, and engaging in playful banter with anyone who crosses her path.
+        </p>
+        <p class="story-chapter-text">
+          Her nickname "Tao" (meaning "naughty" in Chinese) suits her perfectly — she treats 
+          life as an endless game and invites everyone to play along, even as she prepares them 
+          for their final journey.
+        </p>
+        <div class="story-chapter-text">
+          <div class="poem">
+            "The butterfly dances on the edge of a blade,<br>
+            Unaware that the wind has already made its decision.<br>
+            Yet still it dances, still it plays —<br>
+            For that is the only way to live."
+          </div>
+        </div>
+      </div>
+      <div class="story-visual" data-reveal>
+        <img src="images/hu-tao-plum.jpg" alt="Hu Tao with Plum Blossoms" class="story-visual-img">
+        <div class="story-visual-caption">Plum blossoms bloom even in the coldest winter.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== STORY CHAPTER 3 ========== -->
+  <section class="story-section">
+    <div class="story-container">
+      <div class="story-content" data-reveal>
+        <div class="story-chapter-number">03</div>
+        <div class="story-divider"></div>
+        <div class="story-chapter-title">Pyro · Spirit of Embers</div>
+        <div class="story-chapter-title-cn">火元素 · 燃愿之心</div>
+        <p class="story-chapter-text">
+          As a Pyro vision bearer, Hu Tao wields flames that burn with a deep crimson hue — 
+          not the fire of destruction, but the warmth of remembrance. Her flame butterflies, 
+          called "Spirit of Embers," carry the souls of the departed to their final resting place.
+        </p>
+        <p class="story-chapter-text">
+          In battle, she dances with her signature Staff of Homa, a polearm that channels 
+          both her Pyro power and her unyielding spirit. Each strike is accompanied by 
+          butterfly-shaped flames and the faint echo of funeral bells.
+        </p>
+        <div class="story-stats">
+          <div class="stat-item">
+            <div class="stat-number">🔥</div>
+            <div class="stat-label">Pyro DMG</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">🦋</div>
+            <div class="stat-label">Butterflies</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">⚔️</div>
+            <div class="stat-label">Staff of Homa</div>
+          </div>
+        </div>
+      </div>
+      <div class="story-visual" data-reveal>
+        <img src="images/hu-tao-battle.jpg" alt="Hu Tao in Battle" class="story-visual-img">
+        <div class="story-visual-caption">"Burn, butterfly, burn! Let the world remember your light!"</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ABILITIES ========== -->
+  <section class="abilities-section" id="abilities">
+    <div class="abilities-header" data-reveal>
+      <div class="section-label">✦ Abilities</div>
+      <h2 class="section-title">Combat & Skills</h2>
+      <p class="section-subtitle">Hu Tao's unique combat style blends fire, finesse, and the supernatural.</p>
+    </div>
+    <div class="abilities-grid">
+      <div class="ability-card" data-reveal>
+        <div class="ability-icon">🦋</div>
+        <div class="ability-name">Guide to Afterlife</div>
+        <div class="ability-desc">Enter the Paramita Papilio state, unleashing Pyro-infused attacks that scale with max HP. Butterfly spirits guide each strike.</div>
+      </div>
+      <div class="ability-card" data-reveal>
+        <div class="ability-icon">🌺</div>
+        <div class="ability-name">Blood Blossom</div>
+        <div class="ability-desc">Enemies struck by Hu Tao's charged attacks are marked with Blood Blossoms — flowers that bloom with Pyro damage over time.</div>
+      </div>
+      <div class="ability-card" data-reveal>
+        <div class="ability-icon">⚰️</div>
+        <div class="ability-name">Spirit Soother</div>
+        <div class="ability-desc">Unleash a devastating Pyro AoE burst that deals massive damage and regenerates HP for Hu Tao based on the number of enemies hit.</div>
+      </div>
+      <div class="ability-card" data-reveal>
+        <div class="ability-icon">📜</div>
+        <div class="ability-name">Elegy for the Fallen</div>
+        <div class="ability-desc">When Hu Tao falls below 30% HP or is defeated, she gains a significant Pyro DMG bonus — a final, fiery blessing.</div>
+      </div>
+      <div class="ability-card" data-reveal>
+        <div class="ability-icon">🔥</div>
+        <div class="ability-name">Flame Integration</div>
+        <div class="ability-desc">Hu Tao's charged attacks consume stamina to perform a lunge that applies Blood Blossom. Each crit rate increases party CRIT except herself.</div>
+      </div>
+      <div class="ability-card" data-reveal>
+        <div class="ability-icon">👻</div>
+        <div class="ability-name">The Ghostly Guide</div>
+        <div class="ability-desc">Hu Tao's passive talent increases critical rate for all party members (except Hu Tao) by 12% for 10s after using Spirit Soother.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== GALLERY ========== -->
+  <section class="gallery-section" id="gallery">
+    <div class="gallery-header" data-reveal>
+      <div class="section-label">✦ Gallery</div>
+      <h2 class="section-title">A Glimpse Beyond</h2>
+    </div>
+    <div class="gallery-track" aria-label="Image gallery">
+      <div class="gallery-item">
+        <img src="images/hu-tao-hero.jpg" alt="Hu Tao Hero">
+        <div class="gallery-item-overlay"><span class="gallery-item-label">The Director</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/hu-tao-bloom.jpg" alt="Hu Tao Bloom">
+        <div class="gallery-item-overlay"><span class="gallery-item-label">Portrait</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/hu-tao-plum.jpg" alt="Hu Tao Plum">
+        <div class="gallery-item-overlay"><span class="gallery-item-label">Plum Blossoms</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/hu-tao-battle.jpg" alt="Hu Tao Battle">
+        <div class="gallery-item-overlay"><span class="gallery-item-label">Spirit Soother</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/staff-of-homa-3d.jpg" alt="Staff of Homa">
+        <div class="gallery-item-overlay"><span class="gallery-item-label">Staff of Homa</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/hu-tao-hero.jpg" alt="Hu Tao Hero 2">
+        <div class="gallery-item-overlay"><span class="gallery-item-label">Wangsheng Parlor</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/hu-tao-bloom.jpg" alt="Hu Tao Bloom 2">
+        <div class="gallery-item-overlay"><span class="gallery-item-label">Elegy</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="images/hu-tao-plum.jpg" alt="Hu Tao Plum 2">
+        <div class="gallery-item-overlay"><span class="gallery-item-label">Poetry</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FINAL CTA ========== -->
+  <section class="final-cta" id="contact">
+    <div class="quote-mark" style="font-size:4rem;opacity:0.1;">𑁍</div>
+    <h2 class="final-cta-title" data-reveal>
+      "Until We Meet Again"
+    </h2>
+    <div class="final-cta-sub" data-reveal>
+      Life is a grand journey, and every farewell is a promise of reunion.<br>
+      The Wangsheng Funeral Parlor is always open.
+    </div>
+    <div data-reveal>
+      <button class="btn-primary" onclick="showPoem()">
+        <span>📜</span> Read a Poem
+      </button>
+    </div>
+  </section>
+
+  <footer class="footer-bottom">
+    <span>© 2026 Wangsheng Funeral Parlor · All rights reserved</span>
+    <span>Built with UI/UX Pro Max Design Intelligence</span>
+    <div class="footer-socials">
+      <a href="#">✦ Genshin Impact</a>
+      <a href="#">🌺 Official</a>
+      <a href="#">🦋 miHoYo</a>
+    </div>
+  </footer>
+
+  <script>
+    /* ==========================================
+       1. NAVBAR SCROLL EFFECT
+    ========================================== */
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+
+      // Progress bar
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const progress = (scrollTop / scrollHeight) * 100;
+      document.getElementById('scrollProgress').style.width = progress + '%';
+    });
+
+    /* ==========================================
+       2. GSAP & SCROLLTRIGGER — STORY REVEALS
+    ========================================== */
+    gsap.registerPlugin(ScrollTrigger);
+
+    document.querySelectorAll('[data-reveal]').forEach((el, i) => {
+      gsap.fromTo(el,
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.9,
+          delay: 0.1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse'
+          }
+        }
+      );
+    });
+
+    // Scene 3D label animation
+    gsap.to('#sceneLabel', {
+      y: 0,
+      opacity: 1,
+      duration: 0.8,
+      scrollTrigger: {
+        trigger: '#scene-3d',
+        start: 'top 70%',
+        toggleActions: 'play none none reverse'
+      }
+    });
+
+    gsap.to('#sceneTitle', {
+      y: 0,
+      opacity: 1,
+      duration: 0.8,
+      delay: 0.2,
+      scrollTrigger: {
+        trigger: '#scene-3d',
+        start: 'top 70%',
+        toggleActions: 'play none none reverse'
+      }
+    });
+
+    // Chapter-specific parallax on 3D rotation
+    document.querySelectorAll('.story-section').forEach((section, index) => {
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top 60%',
+        onEnter: () => {
+          if (window.currentCupGroup) {
+            gsap.to(window.currentCupGroup.rotation, {
+              y: window.currentCupGroup.rotation.y + Math.PI / 4,
+              duration: 1.2,
+              ease: 'power2.out'
+            });
+          }
+        }
+      });
+    });
+
+    /* ==========================================
+       3. THREE.JS — STAFF OF HOMA 3D RENDER
+    ========================================== */
+    const container = document.getElementById('three-container');
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+    camera.position.set(0, 2, 6);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true
+    });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    container.appendChild(renderer.domElement);
+
+    // Scene background
+    scene.background = new THREE.Color(0x0A0A0A);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0x222244, 0.4);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xFF8844, 1.2);
+    mainLight.position.set(3, 6, 4);
+    mainLight.castShadow = true;
+    scene.add(mainLight);
+
+    const fillLight = new THREE.DirectionalLight(0x4444FF, 0.5);
+    fillLight.position.set(-3, 1, -2);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0xDC2626, 1.0);
+    rimLight.position.set(-1, 3, -4);
+    scene.add(rimLight);
+
+    const pointLight = new THREE.PointLight(0xDC2626, 2, 8);
+    pointLight.position.set(0, 1.5, 2);
+    scene.add(pointLight);
+
+    // ============ BUILD STAFF OF HOMA ============
+    const staffGroup = new THREE.Group();
+    window.currentCupGroup = staffGroup;
+
+    // Main shaft — dark wood
+    const shaftGeom = new THREE.CylinderGeometry(0.08, 0.08, 4.2, 12);
+    const shaftMat = new THREE.MeshStandardMaterial({
+      color: 0x3D1F0A,
+      roughness: 0.6,
+      metalness: 0.2,
+    });
+    const shaft = new THREE.Mesh(shaftGeom, shaftMat);
+    shaft.position.y = 0;
+    shaft.castShadow = true;
+    staffGroup.add(shaft);
+
+    // Shaft wrapping (red bands)
+    for (let i = -1.8; i <= 1.8; i += 0.6) {
+      const bandGeom = new THREE.CylinderGeometry(0.1, 0.1, 0.04, 12);
+      const bandMat = new THREE.MeshStandardMaterial({
+        color: 0xDC2626,
+        roughness: 0.4,
+        metalness: 0.3,
+        emissive: 0xDC2626,
+        emissiveIntensity: 0.1
+      });
+      const band = new THREE.Mesh(bandGeom, bandMat);
+      band.position.y = i;
+      staffGroup.add(band);
+    }
+
+    // Spear tip — gold diamond shape
+    const tipGeom = new THREE.ConeGeometry(0.25, 0.6, 6);
+    const tipMat = new THREE.MeshStandardMaterial({
+      color: 0xD4A017,
+      roughness: 0.2,
+      metalness: 0.8,
+      emissive: 0xD4A017,
+      emissiveIntensity: 0.05
+    });
+    const tip = new THREE.Mesh(tipGeom, tipMat);
+    tip.position.y = 2.3;
+    tip.rotation.x = 0;
+    staffGroup.add(tip);
+
+    // Side blades (wing-like)
+    for (let side = -1; side <= 1; side += 2) {
+      const bladeGeom = new THREE.BoxGeometry(0.02, 0.35, 0.3);
+      const bladeMat = new THREE.MeshStandardMaterial({
+        color: 0xD4A017,
+        roughness: 0.15,
+        metalness: 0.9,
+        emissive: 0xD4A017,
+        emissiveIntensity: 0.02
+      });
+      const blade = new THREE.Mesh(bladeGeom, bladeMat);
+      blade.position.set(side * 0.3, 2.0, 0);
+      blade.rotation.z = side * 0.4;
+      staffGroup.add(blade);
+    }
+
+    // Bottom spike
+    const spikeGeom = new THREE.ConeGeometry(0.12, 0.3, 6);
+    const spikeMat = new THREE.MeshStandardMaterial({
+      color: 0x666666,
+      roughness: 0.3,
+      metalness: 0.7
+    });
+    const spike = new THREE.Mesh(spikeGeom, spikeMat);
+    spike.position.y = -2.2;
+    staffGroup.add(spike);
+
+    // Red tassel at top
+    const tasselGeom = new THREE.CylinderGeometry(0.12, 0.25, 0.3, 8);
+    const tasselMat = new THREE.MeshStandardMaterial({
+      color: 0xDC2626,
+      roughness: 0.8,
+      emissive: 0xDC2626,
+      emissiveIntensity: 0.15
+    });
+    const tassel = new THREE.Mesh(tasselGeom, tasselMat);
+    tassel.position.y = 2.55;
+    staffGroup.add(tassel);
+
+    // Glowing gem at center
+    const gemGeom = new THREE.OctahedronGeometry(0.15, 0);
+    const gemMat = new THREE.MeshStandardMaterial({
+      color: 0xDC2626,
+      roughness: 0.1,
+      metalness: 0.3,
+      emissive: 0xDC2626,
+      emissiveIntensity: 0.8,
+      transparent: true,
+      opacity: 0.9
+    });
+    const gem = new THREE.Mesh(gemGeom, gemMat);
+    gem.position.set(0, 0.3, 0);
+    staffGroup.add(gem);
+
+    // Gem glow aura
+    const glowGeom = new THREE.SphereGeometry(0.3, 16, 16);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0xDC2626,
+      transparent: true,
+      opacity: 0.15
+    });
+    const glow = new THREE.Mesh(glowGeom, glowMat);
+    glow.position.set(0, 0.3, 0);
+    staffGroup.add(glow);
+
+    // ============ BUTTERFLY COMPANIONS ============
+    const butterflies = [];
+    const butterflyColors = [0xDC2626, 0xD4A017, 0x38BDF8, 0xFF6B6B];
+
+    for (let i = 0; i < 6; i++) {
+      const wingGeom = new THREE.SphereGeometry(0.12, 6, 6);
+      wingGeom.scale(1, 0.3, 0.5);
+      const bMat = new THREE.MeshStandardMaterial({
+        color: butterflyColors[i % butterflyColors.length],
+        emissive: butterflyColors[i % butterflyColors.length],
+        emissiveIntensity: 0.3,
+        transparent: true,
+        opacity: 0.7
+      });
+      const bfly = new THREE.Mesh(wingGeom, bMat);
+
+      const wing2 = bfly.clone();
+      wing2.position.x = 0.15;
+      bfly.add(wing2);
+      const wing3 = bfly.clone();
+      wing3.position.x = -0.15;
+      bfly.add(wing3);
+
+      const bodyGeom = new THREE.CylinderGeometry(0.02, 0.02, 0.1, 4);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+      const body = new THREE.Mesh(bodyGeom, bodyMat);
+      body.rotation.x = Math.PI / 2;
+      bfly.add(body);
+
+      const angle = (i / 6) * Math.PI * 2;
+      const radius = 1.8 + Math.random() * 0.5;
+      bfly.userData = {
+        angle: angle,
+        radius: radius,
+        speed: 0.3 + Math.random() * 0.3,
+        yOffset: Math.random() * 2,
+        ySpeed: 0.5 + Math.random() * 0.3,
+        wingFlap: 0
+      };
+      bfly.position.set(
+        Math.cos(angle) * radius,
+        -0.5 + Math.random() * 2,
+        Math.sin(angle) * radius
+      );
+      bfly.scale.set(0.4, 0.4, 0.4);
+      staffGroup.add(bfly);
+      butterflies.push(bfly);
+    }
+
+    // ============ PARTICLE SYSTEM (Flames / Embers) ============
+    const particleCount = 200;
+    const particleGeom = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+    const sizes = new Float32Array(particleCount);
+    const pVelocities = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const r = 0.5 + Math.random() * 2;
+      positions[i * 3] = Math.cos(theta) * r;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 3;
+      positions[i * 3 + 2] = Math.sin(theta) * r;
+
+      const c = new THREE.Color();
+      c.setHSL(0.02 + Math.random() * 0.05, 0.8, 0.4 + Math.random() * 0.4);
+      colors[i * 3] = c.r;
+      colors[i * 3 + 1] = c.g;
+      colors[i * 3 + 2] = c.b;
+
+      sizes[i] = 0.03 + Math.random() * 0.08;
+      pVelocities.push({
+        x: (Math.random() - 0.5) * 0.008,
+        y: 0.01 + Math.random() * 0.02,
+        z: (Math.random() - 0.5) * 0.008
+      });
+    }
+
+    particleGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particleGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    particleGeom.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+    const particleMat = new THREE.PointsMaterial({
+      size: 0.08,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const particleSystem = new THREE.Points(particleGeom, particleMat);
+    staffGroup.add(particleSystem);
+
+    // Ground shadow plane
+    const groundGeom = new THREE.CircleGeometry(2.5, 32);
+    const groundMat = new THREE.MeshBasicMaterial({
+      color: 0xDC2626,
+      transparent: true,
+      opacity: 0.05,
+      side: THREE.DoubleSide
+    });
+    const ground = new THREE.Mesh(groundGeom, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -2.3;
+    scene.add(ground);
+
+    scene.add(staffGroup);
+
+    // ============ 3D INTERACTION ============
+    let autoRotate = true;
+    let showParticles = true;
+    let currentMode = 'pyro';
+    let isDragging = false;
+    let prevMouse = { x: 0, y: 0 };
+
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      autoRotate = false;
+      document.getElementById('btn-rotate').classList.remove('active');
+      prevMouse = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - prevMouse.x;
+      const dy = e.clientY - prevMouse.y;
+      staffGroup.rotation.y += dx * 0.01;
+      staffGroup.rotation.x += dy * 0.005;
+      staffGroup.rotation.x = Math.max(-0.5, Math.min(0.5, staffGroup.rotation.x));
+      prevMouse = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    // Touch
+    container.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      autoRotate = false;
+      document.getElementById('btn-rotate').classList.remove('active');
+      prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    });
+    container.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const dx = e.touches[0].clientX - prevMouse.x;
+      const dy = e.touches[0].clientY - prevMouse.y;
+      staffGroup.rotation.y += dx * 0.01;
+      staffGroup.rotation.x += dy * 0.005;
+      staffGroup.rotation.x = Math.max(-0.5, Math.min(0.5, staffGroup.rotation.x));
+      prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    });
+    container.addEventListener('touchend', () => { isDragging = false; });
+
+    // ============ MODE SWITCHING ============
+    function switchMode(mode) {
+      currentMode = mode;
+      const badge = document.getElementById('badge-3d');
+      const btnPyro = document.getElementById('btn-pyro');
+      const btnButterfly = document.getElementById('btn-butterfly');
+
+      btnPyro.classList.remove('active');
+      btnButterfly.classList.remove('active');
+
+      if (mode === 'pyro') {
+        btnPyro.classList.add('active');
+        badge.className = 'badge-3d pyro';
+        badge.innerHTML = '🔥 Pyro Mode: Spirit of Embers';
+        // Red/orange glow
+        pointLight.color.setHex(0xDC2626);
+        pointLight.intensity = 2;
+        gemMat.color.setHex(0xDC2626);
+        gemMat.emissive.setHex(0xDC2626);
+        particleMat.opacity = 0.7;
+        // Update particle colors
+        const colArr = particleGeom.attributes.color.array;
+        for (let i = 0; i < particleCount; i++) {
+          const c = new THREE.Color();
+          c.setHSL(0.02 + Math.random() * 0.05, 0.8, 0.4 + Math.random() * 0.4);
+          colArr[i * 3] = c.r;
+          colArr[i * 3 + 1] = c.g;
+          colArr[i * 3 + 2] = c.b;
+        }
+        particleGeom.attributes.color.needsUpdate = true;
+      } else {
+        btnButterfly.classList.add('active');
+        badge.className = 'badge-3d butterfly';
+        badge.innerHTML = '🦋 Butterfly Mode: Spirit of Embers';
+        // Blue/cyan glow
+        pointLight.color.setHex(0x38BDF8);
+        pointLight.intensity = 2.5;
+        gemMat.color.setHex(0x38BDF8);
+        gemMat.emissive.setHex(0x38BDF8);
+        particleMat.opacity = 0.5;
+        const colArr = particleGeom.attributes.color.array;
+        for (let i = 0; i < particleCount; i++) {
+          const c = new THREE.Color();
+          c.setHSL(0.55 + Math.random() * 0.1, 0.7, 0.4 + Math.random() * 0.4);
+          colArr[i * 3] = c.r;
+          colArr[i * 3 + 1] = c.g;
+          colArr[i * 3 + 2] = c.b;
+        }
+        particleGeom.attributes.color.needsUpdate = true;
+      }
+    }
+
+    function toggleRotate() {
+      autoRotate = !autoRotate;
+      document.getElementById('btn-rotate').classList.toggle('active', autoRotate);
+    }
+
+    function toggleParticles() {
+      showParticles = !showParticles;
+      document.getElementById('btn-particles').classList.toggle('active', showParticles);
+      particleSystem.visible = showParticles;
+    }
+
+    // Set initial states
+    document.getElementById('btn-rotate').classList.add('active');
+    document.getElementById('btn-particles').classList.add('active');
+
+    // ============ ANIMATION LOOP ============
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+
+      if (autoRotate) {
+        staffGroup.rotation.y += 0.006;
+      }
+
+      // Animate gem pulse
+      const pulse = 0.6 + Math.sin(Date.now() * 0.003) * 0.4;
+      gemMat.emissiveIntensity = pulse;
+      glow.scale.setScalar(1 + Math.sin(Date.now() * 0.002) * 0.3);
+
+      // Animate butterflies
+      butterflies.forEach((bfly, i) => {
+        const data = bfly.userData;
+        data.angle += data.speed * 0.008;
+        data.wingFlap += 0.05;
+        bfly.position.x = Math.cos(data.angle) * data.radius;
+        bfly.position.z = Math.sin(data.angle) * data.radius;
+        bfly.position.y = data.yOffset + Math.sin(Date.now() * data.ySpeed * 0.001) * 0.4;
+        bfly.rotation.y = -data.angle + Math.PI / 2;
+        bfly.scale.y = 0.3 + Math.sin(data.wingFlap) * 0.2;
+      });
+
+      // Animate particles
+      if (showParticles) {
+        const posArr = particleGeom.attributes.position.array;
+        for (let i = 0; i < particleCount; i++) {
+          posArr[i * 3] += pVelocities[i].x;
+          posArr[i * 3 + 1] += pVelocities[i].y;
+          posArr[i * 3 + 2] += pVelocities[i].z;
+
+          if (posArr[i * 3 + 1] > 2.5) {
+            const theta = Math.random() * Math.PI * 2;
+            const r = 0.5 + Math.random() * 1.5;
+            posArr[i * 3] = Math.cos(theta) * r;
+            posArr[i * 3 + 1] = -1.5;
+            posArr[i * 3 + 2] = Math.sin(theta) * r;
+          }
+        }
+        particleGeom.attributes.position.needsUpdate = true;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate3D();
+
+    // ============ RESIZE ============
+    window.addEventListener('resize', () => {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    });
+
+    // ============ UI FUNCTIONS ============
+    function showPoem() {
+      const poems = [
+        "The butterfly dances on the edge of a blade,\nUnaware that the wind has already made its decision.\nYet still it dances, still it plays —\nFor that is the only way to live.",
+        "Plum blossoms bloom in winter's chill,\nA promise that life persists through death.\nSo let us laugh, let us love, let us fill\nEach precious breath with fire and breath.",
+        "The ferryman waits at the river's edge,\nBut I am not ready to cross tonight.\nOne more cup of tea, one more pledge,\nOne more chance to bask in candlelight."
+      ];
+      const poem = poems[Math.floor(Math.random() * poems.length)];
+      alert("📜 A Poem by Hu Tao\n\n" + poem);
+    }
+
+    // Sound effect on mode switch (subtle)
+    function playClick(id) {
+      // Visual feedback only
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.transform = 'scale(0.95)';
+        setTimeout(() => { el.style.transform = ''; }, 150);
+      }
+    }
+
+    // Keyboard shortcut
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '1') switchMode('pyro');
+      if (e.key === '2') switchMode('butterfly');
+      if (e.key === ' ') { e.preventDefault(); toggleRotate(); }
+    });
+
+    console.log('🌸 Hu Tao · Wangsheng Funeral Parlor');
+    console.log('🔥 Premium 3D Story Experience');
+    console.log('✨ Powered by UI/UX Pro Max Design Intelligence');
+  </script>
+</body>
+</html>
