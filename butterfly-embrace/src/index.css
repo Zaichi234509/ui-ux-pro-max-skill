@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --hutao-red: #d9423e;
+  --hutao-dark: #1a1a1a;
+  --hutao-gold: #c39a58;
+  --hutao-brown: #3e2823;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  cursor: none; /* Hide default cursor for custom cursor */
+}
+
+h1, h2, h3, .font-serif {
+  font-family: 'Cinzel', serif;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--hutao-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--hutao-red);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--hutao-gold);
+}
+
+.clip-text {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
