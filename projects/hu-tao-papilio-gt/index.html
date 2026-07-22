@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAPILIO GT-77 · Hu Tao × Wangsheng Speedworks — Hypercar Collab</title>
+<meta name="description" content="A fan-made premium 3D concept: Wangsheng Speedworks teams up with the 77th Director to build the PAPILIO GT-77 — a spirit-flame hypercar limited to 77 units.">
+
+<!-- ============ FONTS ============ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700;1,900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+
+<!-- ============ LIBS (Three.js r128 + GSAP) ============ -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+<style>
+/* =========================================================
+   PAPILIO GT-77 — DESIGN TOKENS
+   Style: Dark Avant-Garde × Gamer Aesthetic × Automotive Luxe
+   ========================================================= */
+:root{
+  --ink:        #0A0709;
+  --ink-2:      #120B0E;
+  --ink-3:      #1A1013;
+  --crimson:    #E01E37;
+  --crimson-hi: #FF4D5E;
+  --crimson-dk: #7A0E1E;
+  --gold:       #E9B44C;
+  --gold-soft:  rgba(233,180,76,.35);
+  --ghost:      #8FE8F2;
+  --ghost-dim:  rgba(143,232,242,.14);
+  --plum:       #F3A6BF;
+
+  --text:       #F6EFE9;
+  --muted:      #A09296;
+  --dim:        #5C5257;
+
+  --border:     rgba(224,30,55,.22);
+  --border-gold:rgba(233,180,76,.25);
+
+  --font-display:'Playfair Display', serif;
+  --font-ui:     'Space Grotesk', sans-serif;
+  --font-body:   'Inter', sans-serif;
+  --font-brush:  'Ma Shan Zheng', cursive;
+
+  --ease-out:   cubic-bezier(.22,1,.36,1);
+  --ease-back:  cubic-bezier(.34,1.56,.64,1);
+
+  --fs-hero: clamp(3.2rem, 11vw, 10.5rem);
+  --fs-h2:   clamp(2.2rem, 5.4vw, 4.6rem);
+  --fs-eyebrow: .72rem;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:hidden}
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-weight:300;
+  letter-spacing:.01em;
+  -webkit-font-smoothing:antialiased;
+  cursor:none;
+}
+::selection{background:var(--crimson);color:#fff}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none;cursor:none}
+button{cursor:none;font-family:var(--font-ui)}
+input{cursor:none}
+
+/* Scrollbar — graveyard chic */
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--crimson-dk),var(--crimson));border-radius:8px;border:2px solid var(--ink)}
+::-webkit-scrollbar-thumb:hover{background:var(--crimson-hi)}
+
+/* =========================================================
+   CURSOR + TRAIL + PROGRESS
+   ========================================================= */
+#cursor-dot,#cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:990;border-radius:50%;will-change:transform}
+#cursor-dot{width:7px;height:7px;background:var(--crimson-hi);box-shadow:0 0 12px var(--crimson-hi);margin:-3.5px 0 0 -3.5px}
+#cursor-ring{
+  width:38px;height:38px;margin:-19px 0 0 -19px;
+  border:1px solid var(--gold-soft);
+  transition:width .35s var(--ease-back),height .35s var(--ease-back),margin .35s var(--ease-back),background .3s,border-color .3s;
+  display:flex;align-items:center;justify-content:center;
+}
+#cursor-ring .clabel{
+  font-family:var(--font-ui);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);
+  opacity:0;transition:opacity .25s;user-select:none;
+}
+#cursor-ring[data-mode="view"],#cursor-ring[data-mode="drag"]{width:76px;height:76px;margin:-38px 0 0 -38px;background:rgba(10,7,9,.55);border-color:var(--gold);backdrop-filter:blur(2px)}
+#cursor-ring[data-mode="view"] .clabel,#cursor-ring[data-mode="drag"] .clabel{opacity:1}
+#cursor-ring[data-mode="link"]{width:56px;height:56px;margin:-28px 0 0 -28px;background:var(--ghost-dim);border-color:var(--crimson-hi)}
+#cursor-ring[data-mode="press"]{transform-origin:center;scale:.8}
+#trail-canvas{position:fixed;inset:0;z-index:980;pointer-events:none;mix-blend-mode:screen}
+#bg-embers{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.5;mix-blend-mode:screen}
+
+#progress{position:fixed;top:0;left:0;height:2px;width:100%;z-index:960;background:transparent;transform-origin:0 0}
+#progress .bar{height:100%;width:100%;background:linear-gradient(90deg,var(--crimson),var(--gold));transform:scaleX(0);transform-origin:0 0;box-shadow:0 0 14px rgba(224,30,55,.7)}
+
+@media (hover:none), (pointer:coarse){
+  body,a,button,input{cursor:auto}
+  #cursor-dot,#cursor-ring,#trail-canvas{display:none}
+}
+
+/* =========================================================
+   PRELOADER
+   ========================================================= */
+#loader{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#loader .panel{position:absolute;left:0;width:100%;height:50.5%;background:var(--ink-2);z-index:1}
+#loader .panel.top{top:0;border-bottom:1px solid var(--border)}
+#loader .panel.bottom{bottom:0}
+#loader .core{position:relative;z-index:2;text-align:center;width:min(92vw,560px)}
+#loader .crest{width:110px;height:110px;margin:0 auto 26px;display:block}
+#loader .crest path,#loader .crest circle{fill:none;stroke:var(--gold);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:1000;stroke-dashoffset:1000;animation:crest-draw 2.4s var(--ease-out) forwards}
+#loader .crest .flame{stroke:var(--crimson-hi);animation-delay:.4s}
+#loader .crest .wing{stroke:var(--ghost);animation-delay:.2s}
+@keyframes crest-draw{to{stroke-dashoffset:0}}
+#loader .brand{font-family:var(--font-ui);letter-spacing:.42em;font-size:.72rem;color:var(--muted);text-transform:uppercase;margin-bottom:14px;overflow:hidden}
+#loader .brand span{display:inline-block;opacity:0;animation:rise .9s var(--ease-out) .9s forwards}
+#loader .name{font-family:var(--font-display);font-weight:900;font-style:italic;font-size:clamp(2.1rem,6vw,3.6rem);line-height:1;overflow:hidden}
+#loader .name span{display:inline-block;transform:translateY(110%);animation:rise 1s var(--ease-out) .35s forwards}
+#loader .name em{color:var(--crimson);font-style:italic}
+#loader .zh{font-family:var(--font-brush);color:var(--gold);font-size:1.1rem;margin-top:12px;opacity:0;animation:fadein 1s ease 1.3s forwards}
+#loader .pct-row{display:flex;align-items:baseline;justify-content:center;gap:10px;margin-top:34px;font-family:var(--font-ui)}
+#loader .pct{font-size:2.4rem;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+#loader .pct-sym{color:var(--crimson-hi);font-size:1rem}
+#loader .bar{position:relative;width:min(70vw,320px);height:1px;background:rgba(255,255,255,.1);margin:16px auto 0;overflow:hidden}
+#loader .bar i{position:absolute;inset:0;background:linear-gradient(90deg,var(--crimson),var(--gold));transform:scaleX(0);transform-origin:left;display:block}
+#loader .hint{margin-top:22px;font-size:.68rem;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;opacity:0;animation:fadein 1s ease 1.6s forwards}
+@keyframes rise{to{transform:translateY(0);opacity:1}}
+@keyframes fadein{to{opacity:1}}
+
+/* =========================================================
+   NAV
+   ========================================================= */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:700;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px clamp(20px,4vw,56px);
+  transform:translateY(-110%);
+  transition:background .5s,backdrop-filter .5s,padding .4s,border-color .5s;
+  border-bottom:1px solid transparent;
+}
+#nav.scrolled{background:rgba(10,7,9,.72);backdrop-filter:blur(14px) saturate(150%);padding-block:12px;border-color:var(--border)}
+#nav .logo{display:flex;align-items:center;gap:12px;font-family:var(--font-ui)}
+#nav .logo svg{width:34px;height:34px}
+#nav .logo .lt{display:flex;flex-direction:column;line-height:1.05}
+#nav .logo .lt b{font-size:.78rem;letter-spacing:.24em;font-weight:600}
+#nav .logo .lt small{font-size:.56rem;letter-spacing:.34em;color:var(--crimson-hi)}
+#nav ul{display:flex;gap:clamp(18px,3vw,42px);list-style:none}
+#nav ul a{font-family:var(--font-ui);font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);position:relative;padding:6px 2px;transition:color .3s}
+#nav ul a::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:right;transition:transform .45s var(--ease-out)}
+#nav ul a:hover{color:var(--text)}
+#nav ul a:hover::after{transform:scaleX(1);transform-origin:left}
+#nav .cta{
+  font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;font-weight:600;
+  color:var(--ink);background:var(--gold);border:none;padding:12px 22px;border-radius:100px;
+  position:relative;overflow:hidden;transition:box-shadow .4s,background .3s;
+}
+#nav .cta:hover{box-shadow:0 0 24px rgba(233,180,76,.5)}
+@media (max-width:900px){#nav ul{display:none}}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+#hero{position:relative;height:100vh;min-height:640px;z-index:2;overflow:hidden}
+#webgl{position:absolute;inset:0;z-index:0;opacity:0;transform:scale(1.06)}
+#hero .vignette{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 42%,transparent 30%,rgba(10,7,9,.62) 78%,var(--ink) 100%);}
+#hero .hero-inner{
+  position:relative;z-index:3;height:100%;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 clamp(20px,5vw,72px) clamp(84px,11vh,120px);
+  pointer-events:none;
+}
+#hero .hero-inner *{pointer-events:none}
+#hero .hero-inner a,#hero .hero-inner button{pointer-events:auto}
+
+.eyebrow{display:flex;align-items:center;gap:14px;font-family:var(--font-ui);font-size:var(--fs-eyebrow);letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:18px}
+.eyebrow .line{width:44px;height:1px;background:var(--gold);display:inline-block}
+.eyebrow .zh{font-family:var(--font-brush);letter-spacing:.2em;color:var(--crimson-hi);font-size:.9rem;text-transform:none}
+
+.hero-title{font-family:var(--font-display);font-weight:900;font-size:var(--fs-hero);line-height:.92;letter-spacing:-.015em;text-transform:uppercase}
+.hero-title .row{display:block;overflow:hidden;padding-bottom:.06em}
+.hero-title .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.06em}
+.hero-title .ch{display:inline-block;transform:translateY(120%) rotate(6deg);will-change:transform}
+.hero-title .solid{font-style:normal;color:var(--text)}
+.hero-title .ital{font-style:italic;background:linear-gradient(100deg,var(--crimson-hi) 10%,var(--crimson) 45%,var(--gold) 95%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 26px rgba(224,30,55,.35))}
+
+.hero-sub{max-width:520px;margin-top:22px;color:var(--muted);font-size:clamp(.92rem,1.2vw,1.05rem);line-height:1.75}
+.hero-sub b{color:var(--text);font-weight:500}
+.hero-sub .brush{font-family:var(--font-brush);color:var(--gold);font-size:1.15em}
+
+.hero-ctas{display:flex;flex-wrap:wrap;gap:16px;margin-top:34px;align-items:center}
+.btn{
+  position:relative;display:inline-flex;align-items:center;gap:12px;overflow:hidden;
+  font-family:var(--font-ui);font-size:.74rem;font-weight:600;letter-spacing:.26em;text-transform:uppercase;
+  padding:18px 34px;border-radius:100px;border:1px solid transparent;
+  transition:box-shadow .45s,transform .35s var(--ease-back),background .3s,color .3s,border-color .3s;
+  will-change:transform;
+}
+.btn svg{width:15px;height:15px;transition:transform .4s var(--ease-back)}
+.btn .fill{position:absolute;inset:0;border-radius:inherit;transform:translateY(101%);transition:transform .5s var(--ease-out);z-index:0}
+.btn span,.btn svg{position:relative;z-index:1}
+.btn:hover svg{transform:translateX(4px)}
+.btn-primary{background:var(--crimson);color:#fff}
+.btn-primary .fill{background:var(--gold)}
+.btn-primary:hover{color:var(--ink);box-shadow:0 0 34px rgba(233,180,76,.45)}
+.btn-ghost{background:transparent;color:var(--text);border-color:rgba(246,239,233,.28)}
+.btn-ghost .fill{background:var(--ghost)}
+.btn-ghost:hover{color:var(--ink);border-color:var(--ghost);box-shadow:0 0 30px rgba(143,232,242,.3)}
+.btn .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.5);transform:scale(0);animation:ripple .7s ease-out forwards;z-index:0;pointer-events:none}
+@keyframes ripple{to{transform:scale(4);opacity:0}}
+
+.hero-chips{display:flex;flex-wrap:wrap;gap:clamp(14px,2.5vw,40px);margin-top:44px;padding-top:26px;border-top:1px solid rgba(246,239,233,.12)}
+.chip .cv{font-family:var(--font-ui);font-weight:600;font-size:clamp(1.2rem,2.2vw,1.7rem);color:var(--text);font-variant-numeric:tabular-nums}
+.chip .cv em{font-style:normal;color:var(--crimson-hi)}
+.chip .ck{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);margin-top:4px}
+
+.hero-side{position:absolute;right:clamp(14px,2.4vw,38px);top:50%;transform:translateY(-50%);z-index:4;
+  display:flex;flex-direction:column;align-items:center;gap:18px}
+.hero-side .vtxt{writing-mode:vertical-rl;font-family:var(--font-ui);font-size:.62rem;letter-spacing:.5em;text-transform:uppercase;color:var(--dim)}
+.hero-side .vline{width:1px;height:70px;background:linear-gradient(var(--crimson),transparent)}
+
+.scroll-cue{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--dim)}
+.scroll-cue .txt{font-family:var(--font-ui);font-size:.58rem;letter-spacing:.4em;text-transform:uppercase}
+.scroll-cue .wheel{width:20px;height:32px;border:1px solid var(--dim);border-radius:12px;position:relative}
+.scroll-cue .wheel::after{content:"";position:absolute;left:50%;top:6px;width:2px;height:6px;margin-left:-1px;border-radius:2px;background:var(--gold);animation:wheel 1.8s ease-in-out infinite}
+@keyframes wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(12px);opacity:0}100%{opacity:0}}
+
+/* Ignition HUD */
+#ignition{
+  position:absolute;right:clamp(18px,3vw,52px);bottom:clamp(84px,11vh,120px);z-index:5;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+#ignition .ring-btn{
+  width:86px;height:86px;border-radius:50%;border:1px solid var(--border-gold);
+  background:radial-gradient(circle at 50% 35%,#241318,var(--ink-2) 72%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  color:var(--gold);font-size:.56rem;letter-spacing:.3em;text-indent:.3em;font-weight:600;
+  transition:box-shadow .4s,border-color .4s,transform .3s var(--ease-back);position:relative;
+}
+#ignition .ring-btn svg{width:20px;height:20px}
+#ignition .ring-btn::before{content:"";position:absolute;inset:-7px;border-radius:50%;border:1px dashed rgba(233,180,76,.4);animation:spin 14s linear infinite}
+#ignition .ring-btn:hover{box-shadow:0 0 30px rgba(233,180,76,.35);transform:scale(1.06)}
+#ignition.on .ring-btn{border-color:var(--crimson-hi);color:var(--crimson-hi);box-shadow:0 0 44px rgba(224,30,55,.55)}
+#ignition.on .ring-btn::before{border-color:rgba(224,30,55,.6);animation-duration:2.5s}
+@keyframes spin{to{transform:rotate(360deg)}}
+#rpm-hud{font-family:var(--font-ui);font-size:.62rem;letter-spacing:.24em;color:var(--dim);opacity:0;transition:opacity .5s;font-variant-numeric:tabular-nums}
+#ignition.on #rpm-hud{opacity:1}
+#rpm-hud b{color:var(--crimson-hi)}
+
+.drag-hint{position:absolute;left:clamp(20px,5vw,72px);top:clamp(96px,14vh,140px);z-index:4;
+  display:flex;align-items:center;gap:10px;color:var(--dim);font-family:var(--font-ui);font-size:.6rem;letter-spacing:.34em;text-transform:uppercase;opacity:0;pointer-events:none}
+.drag-hint svg{width:16px;height:16px;animation:nudge 2.4s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+
+@media(max-width:720px){
+  #ignition{bottom:170px;right:16px}
+  .hero-side{display:none}
+  #hero .hero-inner{padding-bottom:120px}
+  .scroll-cue{display:none}
+}
+
+/* =========================================================
+   MARQUEE
+   ========================================================= */
+#marquee{position:relative;z-index:2;border-block:1px solid var(--border);background:linear-gradient(90deg,rgba(224,30,55,.06),rgba(233,180,76,.05),rgba(224,30,55,.06));overflow:hidden;padding:16px 0}
+.mq-track{display:flex;gap:0;width:max-content;animation:mq 30s linear infinite;will-change:transform}
+#marquee:hover .mq-track{animation-play-state:paused}
+.mq-item{display:flex;align-items:center;gap:26px;padding:0 26px;font-family:var(--font-ui);font-size:.78rem;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);white-space:nowrap;transition:color .3s}
+.mq-item:hover{color:var(--gold)}
+.mq-item .sep{color:var(--crimson);font-size:.9rem}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* =========================================================
+   SHARED SECTION CHROME
+   ========================================================= */
+main{position:relative;z-index:2}
+section{position:relative;padding:clamp(90px,12vh,150px) clamp(20px,6vw,88px)}
+.sec-head{margin-bottom:clamp(44px,6vw,74px);max-width:1100px}
+.sec-head h2{font-family:var(--font-display);font-weight:900;font-size:var(--fs-h2);line-height:1.02;letter-spacing:-.01em}
+.sec-head h2 .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.1em}
+.sec-head h2 .ch{display:inline-block;transform:translateY(115%);will-change:transform}
+.sec-head h2 em{font-style:italic;color:var(--crimson)}
+.sec-head h2 .gold{color:var(--gold);font-style:italic}
+.sec-head p{margin-top:20px;color:var(--muted);max-width:560px;line-height:1.8}
+.sec-index{position:absolute;top:clamp(96px,13vh,158px);right:clamp(20px,5vw,80px);font-family:var(--font-ui);color:var(--dim);font-size:.66rem;letter-spacing:.4em}
+.sec-index b{color:var(--crimson-hi);font-weight:600}
+
+[data-reveal]{opacity:0;transform:translateY(46px)}
+
+/* =========================================================
+   PHILOSOPHY / DESIGN
+   ========================================================= */
+#design{background:linear-gradient(180deg,var(--ink) 0%,rgba(18,11,14,.92) 60%,var(--ink) 100%)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:clamp(18px,2.4vw,30px);perspective:1400px}
+.tilt-card{
+  position:relative;border:1px solid var(--border);border-radius:20px;overflow:hidden;
+  background:linear-gradient(160deg,rgba(26,16,19,.9),rgba(10,7,9,.94));
+  padding:40px 34px 44px;min-height:380px;display:flex;flex-direction:column;
+  transform-style:preserve-3d;transition:border-color .4s,box-shadow .5s;
+}
+.tilt-card:hover{border-color:var(--border-gold);box-shadow:0 30px 60px -30px rgba(224,30,55,.35)}
+.tilt-card .glare{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:radial-gradient(420px circle at var(--gx,50%) var(--gy,50%),rgba(233,180,76,.14),transparent 60%)}
+.tilt-card:hover .glare{opacity:1}
+.tilt-card .num{position:absolute;top:22px;right:26px;font-family:var(--font-display);font-style:italic;font-size:3.4rem;color:transparent;-webkit-text-stroke:1px rgba(233,180,76,.35);line-height:1;transform:translateZ(30px)}
+.tilt-card .icon{width:58px;height:58px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:60px;
+  background:var(--ghost-dim);border:1px solid rgba(143,232,242,.25);transform:translateZ(40px);transition:transform .45s var(--ease-back),background .4s,box-shadow .4s}
+.tilt-card:hover .icon{transform:translateZ(40px) translateY(-6px) rotate(-6deg);background:rgba(224,30,55,.14);box-shadow:0 0 30px rgba(224,30,55,.3)}
+.tilt-card .icon svg{width:26px;height:26px;stroke:var(--ghost);transition:stroke .4s}
+.tilt-card:hover .icon svg{stroke:var(--crimson-hi)}
+.tilt-card h3{font-family:var(--font-display);font-size:1.7rem;font-weight:700;margin-bottom:14px;transform:translateZ(30px)}
+.tilt-card h3 em{color:var(--gold);font-style:italic}
+.tilt-card p{color:var(--muted);font-size:.92rem;line-height:1.8;transform:translateZ(20px)}
+.tilt-card .foot{margin-top:auto;padding-top:26px;font-family:var(--font-ui);font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);transform:translateZ(20px);display:flex;align-items:center;gap:10px}
+.tilt-card .foot i{width:26px;height:1px;background:var(--crimson);display:block}
+
+/* =========================================================
+   SPECS
+   ========================================================= */
+#specs{background:linear-gradient(180deg,var(--ink),rgba(20,10,12,.94) 45%,var(--ink))}
+.specs-grid{display:grid;grid-template-columns:1.05fr 1.4fr;gap:clamp(40px,6vw,90px);align-items:start}
+.specs-sticky{position:sticky;top:120px}
+.spec-figure{margin-top:38px;border-radius:20px;overflow:hidden;border:1px solid var(--border);position:relative}
+.spec-figure img{transition:transform 1.2s var(--ease-out),filter .8s;filter:saturate(.92)}
+.spec-figure:hover img{transform:scale(1.05);filter:saturate(1.1)}
+.spec-figure figcaption{position:absolute;left:0;right:0;bottom:0;padding:22px;font-family:var(--font-ui);font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(246,239,233,.85);background:linear-gradient(transparent,rgba(10,7,9,.9))}
+.bigstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:rgba(246,239,233,.08);border:1px solid rgba(246,239,233,.08);border-radius:20px;overflow:hidden}
+.bigstat{background:var(--ink-2);padding:34px 30px;transition:background .4s}
+.bigstat:hover{background:var(--ink-3)}
+.bigstat .v{font-family:var(--font-ui);font-weight:600;font-size:clamp(2.2rem,3.6vw,3.2rem);line-height:1;font-variant-numeric:tabular-nums}
+.bigstat .v em{font-style:normal;color:var(--crimson-hi)}
+.bigstat .v small{font-size:.42em;color:var(--gold);letter-spacing:.14em;margin-left:4px}
+.bigstat .k{margin-top:10px;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+.spec-bars{margin-top:44px;display:flex;flex-direction:column;gap:26px}
+.spec-bar .row{display:flex;justify-content:space-between;font-family:var(--font-ui);font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.spec-bar .row b{color:var(--text);font-weight:500}
+.spec-bar .track{height:2px;background:rgba(246,239,233,.1);border-radius:2px;overflow:hidden;position:relative}
+.spec-bar .fillv{position:absolute;inset:0;transform:scaleX(0);transform-origin:left;background:linear-gradient(90deg,var(--crimson),var(--gold));box-shadow:0 0 12px rgba(224,30,55,.5)}
+.spec-note{margin-top:40px;display:flex;gap:14px;align-items:flex-start;color:var(--dim);font-size:.78rem;line-height:1.7}
+.spec-note svg{flex:none;width:16px;height:16px;stroke:var(--gold);margin-top:2px}
+@media(max-width:980px){.specs-grid{grid-template-columns:1fr}.specs-sticky{position:static}}
+
+/* =========================================================
+   GALLERY — pinned horizontal scrollytelling
+   ========================================================= */
+#gallery{padding:0;background:var(--ink)}
+#gallery .pin-wrap{height:100vh;display:flex;align-items:center;overflow:hidden;position:relative}
+.g-track{display:flex;gap:clamp(24px,3.4vw,54px);padding:0 clamp(20px,6vw,88px);will-change:transform}
+.g-panel{position:relative;flex:none;width:clamp(300px,62vw,880px);border-radius:22px;overflow:hidden;border:1px solid var(--border)}
+.g-panel img{width:100%;height:clamp(380px,58vh,560px);object-fit:cover;transform:scale(1.12);transition:filter .6s;filter:saturate(.9)}
+.g-panel:hover img{filter:saturate(1.15)}
+.g-panel .cap{position:absolute;left:0;right:0;bottom:0;padding:28px 30px;background:linear-gradient(transparent,rgba(10,7,9,.92) 70%);display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.g-panel .cap h4{font-family:var(--font-display);font-size:clamp(1.3rem,2vw,1.9rem);font-weight:700}
+.g-panel .cap h4 em{color:var(--gold)}
+.g-panel .cap .zh{font-family:var(--font-brush);color:var(--crimson-hi);font-size:1.1rem;white-space:nowrap}
+.g-panel .tag{position:absolute;top:20px;left:20px;font-family:var(--font-ui);font-size:.58rem;letter-spacing:.32em;text-transform:uppercase;color:var(--ghost);border:1px solid rgba(143,232,242,.4);background:rgba(10,7,9,.55);backdrop-filter:blur(6px);padding:8px 14px;border-radius:100px}
+.g-intro{position:absolute;inset-inline:0;top:8vh;padding:0 clamp(20px,6vw,88px);pointer-events:none;z-index:3}
+.g-progress{position:absolute;inset-inline:0;bottom:7vh;padding:0 clamp(20px,6vw,88px);z-index:3}
+.g-progress .gp-track{height:1px;background:rgba(246,239,233,.14);position:relative}
+.g-progress .gp-fill{position:absolute;inset:0;transform:scaleX(0);transform-origin:left;background:linear-gradient(90deg,var(--crimson),var(--gold))}
+.g-progress .gp-meta{display:flex;justify-content:space-between;margin-top:12px;font-family:var(--font-ui);font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+
+/* =========================================================
+   LIVERY STUDIO
+   ========================================================= */
+#livery{background:linear-gradient(180deg,var(--ink),rgba(16,12,20,.9) 50%,var(--ink))}
+.livery-grid{display:grid;grid-template-columns:1.5fr .8fr;gap:clamp(28px,4vw,60px);align-items:stretch}
+.livery-stage{position:relative;border:1px solid var(--border);border-radius:24px;overflow:hidden;min-height:440px;background:radial-gradient(ellipse at 50% 100%,#181016,var(--ink) 75%)}
+#webgl-livery{position:absolute;inset:0}
+.livery-stage .ls-hint{position:absolute;left:24px;bottom:20px;font-family:var(--font-ui);font-size:.58rem;letter-spacing:.32em;text-transform:uppercase;color:var(--dim);display:flex;gap:10px;align-items:center;pointer-events:none}
+.livery-stage .ls-hint svg{width:14px;height:14px}
+.livery-ctrl{display:flex;flex-direction:column;gap:14px}
+.livery-ctrl h3{font-family:var(--font-ui);font-size:.68rem;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.swatch{
+  display:flex;align-items:center;gap:18px;text-align:left;width:100%;
+  background:none;border:1px solid rgba(246,239,233,.12);border-radius:16px;padding:16px 18px;
+  color:var(--text);transition:border-color .3s,background .3s,transform .3s var(--ease-back),box-shadow .4s;
+}
+.swatch:hover{transform:translateX(6px);border-color:var(--border-gold)}
+.swatch.active{border-color:var(--crimson);background:rgba(224,30,55,.08);box-shadow:0 0 26px rgba(224,30,55,.18)}
+.swatch .dots{display:flex;gap:6px}
+.swatch .dots i{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.22);display:block}
+.swatch .meta b{display:block;font-family:var(--font-ui);font-weight:600;font-size:.86rem;letter-spacing:.06em}
+.swatch .meta small{color:var(--dim);font-size:.68rem;letter-spacing:.14em}
+.swatch .check{margin-left:auto;width:20px;height:20px;opacity:0;transform:scale(.5);transition:all .35s var(--ease-back);stroke:var(--gold)}
+.swatch.active .check{opacity:1;transform:scale(1)}
+.livery-out{margin-top:auto;padding-top:20px;border-top:1px solid rgba(246,239,233,.1);font-family:var(--font-ui);font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--dim)}
+.livery-out b{color:var(--gold);font-weight:600}
+@media(max-width:980px){.livery-grid{grid-template-columns:1fr}.livery-stage{min-height:360px}}
+
+/* =========================================================
+   QUOTE
+   ========================================================= */
+#quote{padding:0;height:96vh;min-height:620px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#quote .q-bg{position:absolute;inset:-12% 0;z-index:0;background:url('assets/hutao-portrait.jpg') center 30%/cover no-repeat;will-change:transform}
+#quote .q-veil{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at center,rgba(10,7,9,.45),rgba(10,7,9,.94) 78%),linear-gradient(rgba(10,7,9,.9),transparent 30%,transparent 70%,rgba(10,7,9,.95))}
+#quote .q-content{position:relative;z-index:2;text-align:center;max-width:900px;padding:0 24px}
+#quote .zh-mark{font-family:var(--font-brush);font-size:clamp(7rem,18vw,14rem);line-height:1;color:transparent;-webkit-text-stroke:1px rgba(233,180,76,.35);user-select:none;margin-bottom:-.35em}
+#quote blockquote{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:clamp(1.5rem,3.4vw,2.6rem);line-height:1.45}
+#quote blockquote em{color:var(--crimson-hi)}
+#quote .attr{margin-top:30px;font-family:var(--font-ui);font-size:.66rem;letter-spacing:.4em;text-transform:uppercase;color:var(--muted)}
+#quote .attr b{color:var(--gold);font-weight:600}
+#quote .sig{font-family:var(--font-brush);font-size:2rem;color:var(--crimson-hi);margin-top:8px}
+
+/* =========================================================
+   RESERVE
+   ========================================================= */
+#reserve{background:linear-gradient(180deg,var(--ink),rgba(122,14,30,.14) 55%,var(--ink))}
+.reserve-box{max-width:820px;margin:0 auto;text-align:center}
+.reserve-box h2{font-family:var(--font-display);font-weight:900;font-size:var(--fs-h2);line-height:1.05}
+.reserve-box h2 em{font-style:italic;color:var(--crimson)}
+.reserve-box .sub{color:var(--muted);margin:22px auto 44px;max-width:520px;line-height:1.8}
+.reserve-box .sub b{color:var(--gold);font-weight:500}
+.res-form{display:flex;gap:0;max-width:560px;margin:0 auto;border:1px solid rgba(246,239,233,.16);border-radius:100px;overflow:hidden;background:rgba(18,11,14,.7);backdrop-filter:blur(8px);transition:border-color .4s,box-shadow .4s}
+.res-form:focus-within{border-color:var(--gold);box-shadow:0 0 40px rgba(233,180,76,.18)}
+.res-form input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--text);font-family:var(--font-ui);font-size:.9rem;letter-spacing:.04em;padding:20px 28px}
+.res-form input::placeholder{color:var(--dim)}
+.res-form button{flex:none;border:none;background:var(--crimson);color:#fff;font-size:.68rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;padding:0 34px;position:relative;overflow:hidden;transition:background .35s}
+.res-form button:hover{background:var(--crimson-hi)}
+.res-form button.done{background:var(--gold);color:var(--ink)}
+.res-msg{margin-top:22px;font-family:var(--font-ui);font-size:.72rem;letter-spacing:.2em;color:var(--dim);min-height:1.2em;transition:color .3s}
+.res-msg.ok{color:var(--ghost)}
+.res-msg.err{color:var(--crimson-hi)}
+.res-fine{margin-top:34px;color:var(--dim);font-size:.68rem;letter-spacing:.14em}
+.res-fine b{color:var(--muted);font-weight:500}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:64px clamp(20px,6vw,88px) 40px;background:var(--ink-2);overflow:hidden}
+footer .giant{font-family:var(--font-display);font-weight:900;text-transform:uppercase;font-size:clamp(3rem,12vw,11rem);line-height:.95;color:transparent;-webkit-text-stroke:1px rgba(246,239,233,.12);user-select:none;white-space:nowrap;transition:-webkit-text-stroke-color 1s,text-shadow 1s}
+footer .giant:hover{-webkit-text-stroke-color:rgba(224,30,55,.4);text-shadow:0 0 60px rgba(224,30,55,.15)}
+footer .cols{display:flex;flex-wrap:wrap;gap:34px;justify-content:space-between;align-items:flex-end;margin-top:48px}
+footer .fl{display:flex;gap:26px;list-style:none;flex-wrap:wrap}
+footer .fl a{font-family:var(--font-ui);font-size:.64rem;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);transition:color .3s}
+footer .fl a:hover{color:var(--gold)}
+footer .legal{max-width:420px;color:var(--dim);font-size:.66rem;line-height:1.8;letter-spacing:.05em}
+footer .legal b{color:var(--muted)}
+footer .copy{margin-top:36px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--font-ui);font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+footer .sig{font-family:var(--font-brush);color:var(--crimson);font-size:1.1rem;letter-spacing:.05em;text-transform:none}
+
+/* shake util (engine) */
+.shake{animation:shake .12s linear infinite}
+@keyframes shake{0%{transform:translate(0,0)}25%{transform:translate(-1px,1px)}50%{transform:translate(1px,-1px)}75%{transform:translate(-1px,-1px)}100%{transform:translate(1px,1px)}}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= PRELOADER ================= -->
+<div id="loader" aria-hidden="true">
+  <div class="panel top"></div>
+  <div class="panel bottom"></div>
+  <div class="core">
+    <svg class="crest" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="52" class="wing"/>
+      <path class="wing" d="M60 66 C 46 46, 26 42, 22 56 C 19 68, 34 76, 52 72"/>
+      <path class="wing" d="M60 66 C 74 46, 94 42, 98 56 C 101 68, 86 76, 68 72"/>
+      <path class="wing" d="M60 64 C 50 82, 34 88, 30 78 C 27 70, 40 64, 54 66"/>
+      <path class="wing" d="M60 64 C 70 82, 86 88, 90 78 C 93 70, 80 64, 66 66"/>
+      <path class="flame" d="M60 30 C 55 42, 51 48, 60 62 C 69 48, 65 42, 60 30 Z"/>
+      <circle cx="60" cy="84" r="2.6" class="flame"/>
+    </svg>
+    <div class="brand"><span>Wangsheng Speedworks · 77th Director Series</span></div>
+    <h1 class="name"><span>PAPILIO <em>GT-77</em></span></h1>
+    <div class="zh">胡桃联名 · 一生仅此一圈</div>
+    <div class="pct-row"><span class="pct" id="pct">00</span><span class="pct-sym">%</span></div>
+    <div class="bar"><i id="loadFill"></i></div>
+    <div class="hint">Warming the spirit-flame V12…</div>
+  </div>
+</div>
+
+<!-- Cursor / trail / progress -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"><span class="clabel"></span></div>
+<canvas id="trail-canvas"></canvas>
+<canvas id="bg-embers"></canvas>
+<div id="progress"><div class="bar"></div></div>
+
+<!-- ================= NAV ================= -->
+<nav id="nav">
+  <a class="logo" href="#top" data-cursor="link" aria-label="Wangsheng Speedworks home">
+    <svg viewBox="0 0 120 120" fill="none" stroke="#E9B44C" stroke-width="4" stroke-linecap="round">
+      <path d="M60 66 C 46 46, 26 42, 22 56 C 19 68, 34 76, 52 72"/>
+      <path d="M60 66 C 74 46, 94 42, 98 56 C 101 68, 86 76, 68 72"/>
+      <path d="M60 30 C 55 42, 51 48, 60 62 C 69 48, 65 42, 60 30 Z" stroke="#FF4D5E"/>
+    </svg>
+    <span class="lt"><b>WANGSHENG</b><small>SPEEDWORKS</small></span>
+  </a>
+  <ul>
+    <li><a href="#design" data-cursor="link">Design</a></li>
+    <li><a href="#specs" data-cursor="link">Specs</a></li>
+    <li><a href="#gallery" data-cursor="link">Gallery</a></li>
+    <li><a href="#livery" data-cursor="link">Livery</a></li>
+  </ul>
+  <button class="cta magnetic" data-cursor="link" onclick="document.getElementById('reserve').scrollIntoView({behavior:'smooth'})">Reserve</button>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header id="hero">
+  <div id="webgl"></div>
+  <div class="vignette"></div>
+
+  <div class="drag-hint" id="dragHint">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12h8M8 12l3-3M8 12l3 3M16 12l-3-3M16 12l-3 3"/></svg>
+    Drag to spin her round
+  </div>
+
+  <div class="hero-side">
+    <span class="vtxt">Liyue Harbor · Night Circuit</span>
+    <span class="vline"></span>
+    <span class="vtxt" style="font-family:var(--font-brush);font-size:.9rem;color:var(--gold);letter-spacing:.35em">往生堂速工房</span>
+  </div>
+
+  <div class="hero-inner">
+    <div class="eyebrow" id="heroEyebrow">
+      <span class="line"></span>
+      Wangsheng Speedworks × The 77th Director
+      <span class="zh">胡桃 联名款</span>
+    </div>
+
+    <h1 class="hero-title" id="heroTitle">
+      <span class="row" data-split>PAPILIO</span>
+      <span class="row ital" data-split>GT-77</span>
+    </h1>
+
+    <p class="hero-sub" data-fade>
+      One life. One lap. The <b>spirit-flame V12 hypercar</b> tuned by the Director herself —
+      butterfly active aero, ghost-grade hybrid boost, and a finish so deep it looks <b>painted by the afterlife</b>.
+      <span class="brush">往生之旅，一路疾驰。</span>
+    </p>
+
+    <div class="hero-ctas" data-fade>
+      <a class="btn btn-primary magnetic" href="#reserve" data-cursor="link">
+        <span class="fill"></span><span>Reserve 1 of 77</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <button class="btn btn-ghost magnetic" id="filmBtn" data-cursor="link">
+        <span class="fill"></span><span>Ignite the V12</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+      </button>
+    </div>
+
+    <div class="hero-chips" data-fade>
+      <div class="chip"><div class="cv"><em>1,077</em></div><div class="ck">Spirit HP</div></div>
+      <div class="chip"><div class="cv">2.4<em>s</em></div><div class="ck">0–100 km/h</div></div>
+      <div class="chip"><div class="cv"><em>407</em></div><div class="ck">km/h V-max</div></div>
+      <div class="chip"><div class="cv">1 / <em>77</em></div><div class="ck">Units Worldwide</div></div>
+    </div>
+  </div>
+
+  <div id="ignition">
+    <button class="ring-btn" id="ignitionBtn" data-cursor="link" aria-label="Start engine">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+      IGN
+    </button>
+    <div id="rpm-hud">RPM <b id="rpmVal">900</b> · <span id="gearVal">N</span></div>
+  </div>
+
+  <div class="scroll-cue">
+    <div class="wheel"></div>
+    <div class="txt">Cross Over</div>
+  </div>
+</header>
+
+<main>
+<!-- ================= MARQUEE ================= -->
+<div id="marquee" aria-hidden="true">
+  <div class="mq-track" id="mqTrack"></div>
+</div>
+
+<!-- ================= DESIGN ================= -->
+<section id="design">
+  <div class="sec-index" data-reveal>01 / <b>The Craft</b></div>
+  <div class="sec-head">
+    <div class="eyebrow" data-reveal><span class="line"></span>Design Philosophy</div>
+    <h2 data-split-h2>Born in the <em>funeral parlor,</em> dressed for the <span class="gold">finish line.</span></h2>
+    <p data-reveal>Every panel of the GT-77 is a negotiation between two worlds — the Director insisted the aerodynamics should “let the butterflies do the heavy lifting.” Engineering agreed.</p>
+  </div>
+
+  <div class="cards">
+    <article class="tilt-card" data-reveal data-cursor="view">
+      <div class="glare"></div>
+      <div class="num">壹</div>
+      <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13 C 9 7, 4 5, 3 8.5 C 2.2 11.2 5.6 13.6 10 13 M12 13 C 15 7, 20 5, 21 8.5 C 21.8 11.2 18.4 13.6 14 13 M12 13 C 9.5 17.5, 5.5 19, 5 16.5 C 4.6 14.8 7 13.4 10.5 13.2 M12 13 C 14.5 17.5, 18.5 19, 19 16.5 C 19.4 14.8 17 13.4 13.5 13.2 M12 6v3"/></svg></div>
+      <h3>Butterfly <em>Active Aero</em></h3>
+      <p>Twin morphing wing-planes unfold like papilio wings under braking, bleeding speed the way spirit flames bleed into the night — silently, beautifully, and all at once.</p>
+      <div class="foot"><i></i>1,200 kg downforce · DRX morph-map</div>
+    </article>
+
+    <article class="tilt-card" data-reveal data-cursor="view">
+      <div class="glare"></div>
+      <div class="num">贰</div>
+      <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c0 4-5 5.5-5 10a5 5 0 0 0 10 0c0-4.5-5-6-5-10z"/><path d="M12 22a3 3 0 0 1-3-3c0-2 3-3.5 3-6 0 2.5 3 4 3 6a3 3 0 0 1-3 3z"/></svg></div>
+      <h3>Spirit-Flame <em>V12</em></h3>
+      <p>A 6.6L naturally-aspirated V12 married to a ghost-cell hybrid boost. It idles like a lullaby and revs like the Director’s laugh — sudden, wicked, unforgettable.</p>
+      <div class="foot"><i></i>11,100 rpm redline · 316 kW ghost boost</div>
+    </article>
+
+    <article class="tilt-card" data-reveal data-cursor="view">
+      <div class="glare"></div>
+      <div class="num">叁</div>
+      <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M12 10C9 5 5 4 4 6c-1 2 2 5 6 5M12 10c3-5 7-6 8-4 1 2-2 5-6 5M12 14c-3 5-7 6-8 4-1-2 2-5 6-5M12 14c3 5 7 6 8 4 1-2-2-5-6-5M12 10V4M12 20v-6"/></svg></div>
+      <h3>Plum-Blossom <em>Forge</em></h3>
+      <p>Carbon monocoque cured in kilns lit with plum-wood, then lacquered in seven coats of “Crimson Crossing” — a pigment mixed, legend says, at exactly midnight.</p>
+      <div class="foot"><i></i>990 kg dry · 7-coat afterlife lacquer</div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= SPECS ================= -->
+<section id="specs">
+  <div class="sec-index" data-reveal>02 / <b>The Numbers</b></div>
+  <div class="specs-grid">
+    <div class="specs-sticky">
+      <div class="eyebrow" data-reveal><span class="line"></span>Specifications</div>
+      <h2 data-split-h2>Numbers the <em>ferryman</em> charges extra for.</h2>
+      <p data-reveal style="margin-top:20px;color:var(--muted);line-height:1.8;max-width:440px">Dyno-tested on the ridge above Wuwang Hill. The stopwatch, reportedly, applauded. Each of the 77 cars ships with a plaque signed by the Director — mostly legible.</p>
+      <figure class="spec-figure" data-reveal data-cursor="view">
+        <img src="assets/car-side.jpg" alt="PAPILIO GT-77 side profile — obsidian and crimson butterfly livery">
+        <figcaption>Studio profile · Crimson Crossing livery · 1 of 77</figcaption>
+      </figure>
+    </div>
+
+    <div>
+      <div class="bigstats">
+        <div class="bigstat" data-reveal><div class="v"><span data-count="1077">0</span><em>+</em><small>HP</small></div><div class="k">Combined spirit output</div></div>
+        <div class="bigstat" data-reveal><div class="v"><span data-count="2.4" data-dec="1">0</span><em>s</em></div><div class="k">0–100 km/h</div></div>
+        <div class="bigstat" data-reveal><div class="v"><span data-count="407">0</span><small>KM/H</small></div><div class="k">V-max, tailwind optional</div></div>
+        <div class="bigstat" data-reveal><div class="v"><span data-count="990">0</span><small>KG</small></div><div class="k">Dry weight</div></div>
+      </div>
+
+      <div class="spec-bars">
+        <div class="spec-bar" data-reveal><div class="row"><b>Power-to-weight</b><span>1.09 hp / kg</span></div><div class="track"><div class="fillv" style="--p:.96"></div></div></div>
+        <div class="spec-bar" data-reveal><div class="row"><b>Aero efficiency — Butterfly DRX</b><span>92%</span></div><div class="track"><div class="fillv" style="--p:.92"></div></div></div>
+        <div class="spec-bar" data-reveal><div class="row"><b>Ghost-boost deployment</b><span>0.18 s</span></div><div class="track"><div class="fillv" style="--p:.88"></div></div></div>
+        <div class="spec-bar" data-reveal><div class="row"><b>Lap of Liyue (unofficial)</b><span>Classified</span></div><div class="track"><div class="fillv" style="--p:1"></div></div></div>
+      </div>
+
+      <div class="spec-note" data-reveal>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg>
+        Figures measured with Boo Tao riding shotgun. Your afterlife may vary. Warranty void if driven through the border between worlds more than twice.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GALLERY ================= -->
+<section id="gallery">
+  <div class="pin-wrap" id="galleryPin">
+    <div class="g-intro">
+      <div class="eyebrow"><span class="line"></span>Night Gallery · 夜行图鉴</div>
+    </div>
+    <div class="g-track" id="gTrack">
+      <figure class="g-panel" data-cursor="drag">
+        <img src="assets/gallery-drift.jpg" alt="GT-77 drifting a mountain hairpin trailing embers and spirit flames">
+        <span class="tag">Mode · Spirit-Flame Drift</span>
+        <figcaption class="cap"><h4>Hairpins of <em>Wuwang Hill</em></h4><span class="zh">漫山鬼火</span></figcaption>
+      </figure>
+      <figure class="g-panel" data-cursor="drag">
+        <img src="assets/gallery-city.jpg" alt="GT-77 parked in a rain-soaked neon alley surrounded by glowing butterflies">
+        <span class="tag">Location · Harbor Alley</span>
+        <figcaption class="cap"><h4>Neon rains of <em>Liyue</em></h4><span class="zh">霓虹夜泊</span></figcaption>
+      </figure>
+      <figure class="g-panel" data-cursor="drag">
+        <img src="assets/car-rear.jpg" alt="Rear three-quarter view — butterfly-wing taillight signature">
+        <span class="tag">Design · Light Signature</span>
+        <figcaption class="cap"><h4>The <em>Papilio</em> tail</h4><span class="zh">蝶翼尾灯</span></figcaption>
+      </figure>
+      <figure class="g-panel" data-cursor="drag">
+        <img src="assets/car-interior.jpg" alt="Cockpit with holographic butterfly HUD and crimson ambient light">
+        <span class="tag">Interior · Ghost-Grade</span>
+        <figcaption class="cap"><h4>Cockpit of the <em>Crossing</em></h4><span class="zh">往生座舱</span></figcaption>
+      </figure>
+      <figure class="g-panel" data-cursor="drag">
+        <img src="assets/hero.jpg" alt="The Director leaning on her GT-77 in a neon city">
+        <span class="tag">Portrait · The Director</span>
+        <figcaption class="cap"><h4>Director <em>Hu Tao</em>, at leisure</h4><span class="zh">堂主巡街</span></figcaption>
+      </figure>
+    </div>
+    <div class="g-progress">
+      <div class="gp-track"><div class="gp-fill" id="gpFill"></div></div>
+      <div class="gp-meta"><span>Scroll to drive</span><span id="gpCount">01 / 05</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LIVERY ================= -->
+<section id="livery">
+  <div class="sec-index" data-reveal>03 / <b>The Atelier</b></div>
+  <div class="sec-head">
+    <div class="eyebrow" data-reveal><span class="line"></span>Livery Atelier</div>
+    <h2 data-split-h2>Pick your <em>crossing</em> color.</h2>
+    <p data-reveal>Four lacquers mixed at midnight. Drag the turntable, take your time — the Director isn’t going anywhere.</p>
+  </div>
+  <div class="livery-grid">
+    <div class="livery-stage" data-reveal data-cursor="drag">
+      <div id="webgl-livery"></div>
+      <div class="ls-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12h8M8 12l3-3M8 12l3 3M16 12l-3-3M16 12l-3 3"/></svg>
+        Drag to rotate · Live 3D
+      </div>
+    </div>
+    <div class="livery-ctrl" data-reveal>
+      <h3>Midnight Lacquer</h3>
+      <button class="swatch active" data-livery="crimson" data-cursor="link">
+        <span class="dots"><i style="background:#171016"></i><i style="background:#E01E37"></i><i style="background:#E9B44C"></i></span>
+        <span class="meta"><b>Crimson Crossing</b><small>Obsidian · crimson · gold pinstripe</small></span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
+      <button class="swatch" data-livery="ghost" data-cursor="link">
+        <span class="dots"><i style="background:#0C1417"></i><i style="background:#8FE8F2"></i><i style="background:#E01E37"></i></span>
+        <span class="meta"><b>Ghost Lantern</b><small>Abyss teal · spirit cyan · ember red</small></span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
+      <button class="swatch" data-livery="plum" data-cursor="link">
+        <span class="dots"><i style="background:#1C1118"></i><i style="background:#F3A6BF"></i><i style="background:#E9B44C"></i></span>
+        <span class="meta"><b>Plum Eclipse</b><small>Wine dark · blossom pink · gold</small></span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
+      <button class="swatch" data-livery="funeral" data-cursor="link">
+        <span class="dots"><i style="background:#0A0A0C"></i><i style="background:#C9C9D1"></i><i style="background:#E01E37"></i></span>
+        <span class="meta"><b>Funeral Parlor Black</b><small>Pure obsidian · bone silver · red seal</small></span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
+      <div class="livery-out">Selected — <b id="liveryName">Crimson Crossing</b> · lacquer deposit <b>₳7,700</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUOTE ================= -->
+<section id="quote">
+  <div class="q-bg" id="quoteBg"></div>
+  <div class="q-veil"></div>
+  <div class="q-content">
+    <div class="zh-mark" data-reveal>蝶</div>
+    <blockquote data-reveal>
+      “The road, like life, is a one-way trip — so <em>burn bright</em>, laugh loud,
+      and let the butterflies keep the pace.”
+    </blockquote>
+    <div class="attr" data-reveal>— <b>Hu Tao</b> · 77th Director of the Wangsheng Funeral Parlor · Chief Speed Officer</div>
+    <div class="sig" data-reveal>胡桃</div>
+  </div>
+</section>
+
+<!-- ================= RESERVE ================= -->
+<section id="reserve">
+  <div class="reserve-box">
+    <div class="eyebrow" data-reveal style="justify-content:center"><span class="line"></span>Final Crossing<span class="line"></span></div>
+    <h2 data-split-h2>77 cars. <em>One</em> afterlife.</h2>
+    <p class="sub" data-reveal>Leave a raven — or an email — and the parlor’s courier ghost will reserve your build slot. <b>Second slot half price</b>, as tradition demands.</p>
+    <form class="res-form" id="resForm" data-reveal>
+      <input type="email" id="resEmail" placeholder="your@soul.teyvat" aria-label="Email address" autocomplete="email">
+      <button type="submit" id="resBtn" data-cursor="link"><span id="resBtnTxt">Reserve</span></button>
+    </form>
+    <div class="res-msg" id="resMsg">No souls are stored. Promise.</div>
+    <div class="res-fine" data-reveal>Deliveries begin <b>when the plum blossoms fall</b> · Liyue Harbor, Pier 77</div>
+  </div>
+</section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="giant" data-reveal>Papilio GT-77</div>
+  <div class="cols">
+    <ul class="fl">
+      <li><a href="#design" data-cursor="link">Design</a></li>
+      <li><a href="#specs" data-cursor="link">Specs</a></li>
+      <li><a href="#gallery" data-cursor="link">Gallery</a></li>
+      <li><a href="#livery" data-cursor="link">Livery</a></li>
+      <li><a href="#reserve" data-cursor="link">Reserve</a></li>
+    </ul>
+    <p class="legal">
+      <b>Disclaimer:</b> PAPILIO GT-77 is a fan-made concept collaboration. Not affiliated with, sponsored, or endorsed by HoYoverse / COGNOSPHERE.
+      All artwork on this page was AI-generated for this concept. Driven fast, parked respectfully.
+    </p>
+  </div>
+  <div class="copy">
+    <span>© 2026 Wangsheng Speedworks (Fan Concept)</span>
+    <span class="sig">往生堂速工房 · 一路疾驰</span>
+    <span>Built with Three.js · GSAP · 蝶</span>
+  </div>
+</footer>
+
+<script>
+/* =========================================================================
+   PAPILIO GT-77 — APPLICATION
+   Sections: utils / loader / cursor+trails / nav / marquee / split text /
+   GSAP scrollytelling / tilt cards / 3D hero scene / livery scene / engine
+   ========================================================================= */
+(function(){
+'use strict';
+gsap.registerPlugin(ScrollTrigger);
+
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TOUCH  = matchMedia('(hover: none), (pointer: coarse)').matches;
+const lerp   = (a,b,t)=>a+(b-a)*t;
+const clamp  = (v,mi,ma)=>Math.max(mi,Math.min(ma,v));
+const rand   = (a,b)=>a+Math.random()*(b-a);
+const DPR    = Math.min(window.devicePixelRatio||1, 1.75);
+
+/* ===================================================
+   1) PRELOADER — real asset preload + smooth counter
+   =================================================== */
+const ASSETS = ['assets/hero.jpg','assets/car-side.jpg','assets/car-rear.jpg','assets/car-interior.jpg','assets/gallery-drift.jpg','assets/gallery-city.jpg','assets/hutao-portrait.jpg'];
+const pctEl  = document.getElementById('pct');
+const fillEl = document.getElementById('loadFill');
+let loaded = 0, shownPct = 0, loadedAll = false;
+
+ASSETS.forEach(src=>{
+  const img = new Image();
+  img.onload = img.onerror = ()=>{ loaded++; };
+  img.src = src;
+});
+setTimeout(()=>{ loadedAll = true; }, 4200); // hard cap — never trap the user
+
+const loadTick = ()=>{
+  const real = (loaded/ASSETS.length)*100;
+  const cap  = loadedAll ? 100 : Math.max(real, 96*Math.min(1,(performance.now()-t0Load)/2600));
+  shownPct = lerp(shownPct, Math.min(cap, 100), 0.08);
+  pctEl.textContent = String(Math.floor(shownPct)).padStart(2,'0');
+  fillEl.style.transform = `scaleX(${shownPct/100})`;
+  if (shownPct > 99.2) { finishLoading(); return; }
+  requestAnimationFrame(loadTick);
+};
+const t0Load = performance.now();
+requestAnimationFrame(loadTick);
+
+function finishLoading(){
+  if (finishLoading.done) return; finishLoading.done = true;
+  pctEl.textContent = '100';
+  fillEl.style.transform = 'scaleX(1)';
+  introTimeline();
+}
+
+/* ===================================================
+   2) SPLIT TEXT UTILS
+   =================================================== */
+function splitInto(el){
+  const text = el.textContent;
+  el.textContent = '';
+  [...text].forEach(c=>{
+    if (c === ' ') { el.appendChild(document.createTextNode('\u00A0')); return; }
+    const w = document.createElement('span'); w.className = 'w';
+    const ch = document.createElement('span'); ch.className = 'ch'; ch.textContent = c;
+    w.appendChild(ch); el.appendChild(w);
+  });
+}
+document.querySelectorAll('[data-split]').forEach(r=>splitInto(r));
+document.querySelectorAll('[data-split-h2]').forEach(h=>{
+  // split only plain text nodes, preserve <em>/<span> styling per node
+  const process = node=>{
+    if (node.nodeType === 3) {
+      const frag = document.createDocumentFragment();
+      [...node.textContent].forEach(c=>{
+        if (c === ' ') { frag.appendChild(document.createTextNode(' ')); return; }
+        const w = document.createElement('span'); w.className='w';
+        const ch = document.createElement('span'); ch.className='ch'; ch.textContent=c;
+        w.appendChild(ch); frag.appendChild(w);
+      });
+      node.replaceWith(frag);
+    } else if (node.nodeType === 1 && node.tagName !== 'BR') [...node.childNodes].forEach(process);
+  };
+  [...h.childNodes].forEach(process);
+});
+
+/* hero title rows: give the two rows different looks */
+const heroRows = document.querySelectorAll('#heroTitle .row');
+
+/* ===================================================
+   3) INTRO TIMELINE (entrance animation)
+   =================================================== */
+function introTimeline(){
+  const tl = gsap.timeline({defaults:{ease:'expo.out'}});
+  const chars = document.querySelectorAll('#heroTitle .ch');
+
+  tl.to('#loader .core', {opacity:0, y:-30, duration:.6, ease:'power2.in'})
+    .to('#loader .panel.top',    {yPercent:-101, duration:1.05, ease:'expo.inOut'}, '-=.1')
+    .to('#loader .panel.bottom', {yPercent: 101, duration:1.05, ease:'expo.inOut'}, '<')
+    .set('#loader', {display:'none'})
+    .to('#webgl', {opacity:1, scale:1, duration:2, ease:'expo.out'}, '-=1.2')
+    .to('#nav',   {y:0, yPercent:0, duration:.9, ease:'expo.out'}, '-=1.8')
+    .to(chars, {y:0, yPercent:0, rotate:0, duration:1.2, stagger:{each:.045, from:'start'}}, '-=1.55')
+    .fromTo('#heroEyebrow', {opacity:0, x:-30}, {opacity:1, x:0, duration:.8}, '-=1.1')
+    .fromTo('[data-fade]', {opacity:0, y:26}, {opacity:1, y:0, duration:.9, stagger:.12}, '-=.8')
+    .fromTo('#ignition', {opacity:0, scale:.6}, {opacity:1, scale:1, duration:.8, ease:'back.out(1.7)'}, '-=.6')
+    .fromTo('.hero-side', {opacity:0}, {opacity:1, duration:1}, '-=.5')
+    .fromTo('.scroll-cue', {opacity:0}, {opacity:1, duration:.8}, '-=.6')
+    .to('#dragHint', {opacity:1, duration:.8, onComplete:()=>{ setTimeout(()=>gsap.to('#dragHint',{opacity:.55,duration:1}), 2600); }}, '-=.4')
+    .add(()=>{ heroCamera.dollyIn(); }, '-=2.4');
+
+  if (REDUCE) tl.progress(1);
+}
+
+/* ===================================================
+   4) CUSTOM CURSOR + EMBER TRAIL + BG EMBERS
+   =================================================== */
+const dot = document.getElementById('cursor-dot');
+const ring= document.getElementById('cursor-ring');
+const ringLabel = ring.querySelector('.clabel');
+let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+
+addEventListener('pointermove', e=>{ mx = e.clientX; my = e.clientY; }, {passive:true});
+addEventListener('pointerdown', ()=> ring.setAttribute('data-mode','press'));
+addEventListener('pointerup',   ()=> ring.setAttribute('data-mode', hoverMode||''));
+
+let hoverMode = '';
+document.addEventListener('pointerover', e=>{
+  const t = e.target.closest('[data-cursor]');
+  hoverMode = t ? t.dataset.cursor : '';
+  ring.setAttribute('data-mode', hoverMode);
+  ringLabel.textContent = hoverMode === 'view' ? 'VIEW' : hoverMode === 'drag' ? 'DRAG' : '';
+}, {passive:true});
+
+(function cursorLoop(){
+  rx = lerp(rx, mx, 0.16); ry = lerp(ry, my, 0.16);
+  dot.style.transform  = `translate(${mx}px,${my}px)`;
+  ring.style.transform = `translate(${rx}px,${ry}px)`;
+  requestAnimationFrame(cursorLoop);
+})();
+
+/* -- ember trail (2D canvas) -- */
+const tc = document.getElementById('trail-canvas');
+const tctx = tc.getContext('2d');
+let trail = [];
+function sizeCanvas(cv){ cv.width = innerWidth*DPR; cv.height = innerHeight*DPR; cv.getContext('2d').setTransform(DPR,0,0,DPR,0,0); }
+sizeCanvas(tc);
+let lastSpawn = 0;
+addEventListener('pointermove', ()=>{
+  if (REDUCE || TOUCH) return;
+  const now = performance.now();
+  if (now - lastSpawn < 24) return; lastSpawn = now;
+  trail.push({x:mx, y:my, vx:rand(-.4,.4), vy:rand(-1.4,-.4), life:1, size:rand(1.2,3.4),
+              hue: Math.random()<.62 ? rand(350,362) : (Math.random()<.5 ? 45 : 190)});
+}, {passive:true});
+window.burst = (x,y,n=26)=>{ // used by CTA + form success
+  for (let i=0;i<n;i++) trail.push({x,y,vx:rand(-3.2,3.2),vy:rand(-4,1.5),life:1,size:rand(1.6,3.8),hue:Math.random()<.5?355:rand(40,50)});
+};
+(function trailLoop(){
+  tctx.clearRect(0,0,innerWidth,innerHeight);
+  trail = trail.filter(p=>p.life>0);
+  for (const p of trail){
+    p.x += p.vx; p.y += p.vy; p.vy -= .008; p.life -= .016;
+    tctx.globalAlpha = p.life * .85;
+    tctx.fillStyle = `hsl(${p.hue} 95% ${p.hue===45?62:58}%)`;
+    tctx.beginPath(); tctx.arc(p.x,p.y,p.size*p.life,0,7); tctx.fill();
+  }
+  tctx.globalAlpha = 1;
+  requestAnimationFrame(trailLoop);
+})();
+
+/* -- background embers (fixed, subtle) -- */
+const bg = document.getElementById('bg-embers');
+const bctx = bg.getContext('2d');
+sizeCanvas(bg);
+const embers = Array.from({length: 46}, ()=>({x:rand(0,innerWidth), y:rand(0,innerHeight), s:rand(.6,2.2), v:rand(.12,.5), drift:rand(.3,1.4), ph:rand(0,7), cr:Math.random()<.7}));
+(function bgLoop(t){
+  bctx.clearRect(0,0,innerWidth,innerHeight);
+  const tt = t||0;
+  for (const e of embers){
+    e.y -= e.v; e.x += Math.sin(tt*0.0006*e.drift + e.ph)*0.28;
+    if (e.y < -10){ e.y = innerHeight+10; e.x = rand(0,innerWidth); }
+    const a = .25 + Math.sin(tt*0.002 + e.ph)*.18;
+    bctx.globalAlpha = Math.max(0,a);
+    bctx.fillStyle = e.cr ? '#FF4D5E' : '#E9B44C';
+    bctx.beginPath(); bctx.arc(e.x, e.y, e.s, 0, 7); bctx.fill();
+  }
+  bctx.globalAlpha = 1;
+  if (!REDUCE) requestAnimationFrame(bgLoop);
+})(0);
+
+addEventListener('resize', ()=>{ sizeCanvas(tc); sizeCanvas(bg); });
+
+/* ===================================================
+   5) NAV + PROGRESS + MARQUEE
+   =================================================== */
+const nav = document.getElementById('nav');
+const progressBar = document.querySelector('#progress .bar');
+addEventListener('scroll', ()=>{
+  nav.classList.toggle('scrolled', scrollY > 40);
+  const h = document.documentElement;
+  progressBar.style.transform = `scaleX(${h.scrollTop/(h.scrollHeight-h.clientHeight)})`;
+}, {passive:true});
+
+/* marquee content (duplicated for seamless loop) */
+const mqItems = ['PAPILIO GT-77','1 OF 77','SPIRIT-FLAME V12','BUTTERFLY ACTIVE AERO','ONE LIFE · ONE LAP','407 KM/H','胡桃联名','CRIMSON CROSSING'];
+const mqHalf = mqItems.map(t=>`<span class="mq-item"><i class="sep">✦</i>${t}</span>`).join('');
+document.getElementById('mqTrack').innerHTML = mqHalf + mqHalf;
+
+/* magnetic buttons */
+if (!TOUCH) document.querySelectorAll('.magnetic').forEach(el=>{
+  const xTo = gsap.quickTo(el,'x',{duration:.4,ease:'power3'}), yTo = gsap.quickTo(el,'y',{duration:.4,ease:'power3'});
+  el.addEventListener('pointermove', e=>{
+    const r = el.getBoundingClientRect();
+    xTo((e.clientX-(r.left+r.width/2))*.32); yTo((e.clientY-(r.top+r.height/2))*.32);
+  });
+  el.addEventListener('pointerleave', ()=>{ xTo(0); yTo(0); });
+});
+
+/* button ripple + ember burst micro-interaction */
+document.querySelectorAll('.btn').forEach(b=>{
+  b.addEventListener('pointerdown', e=>{
+    const r = b.getBoundingClientRect();
+    const rp = document.createElement('span');
+    rp.className = 'ripple';
+    const s = Math.max(r.width, r.height)*.5;
+    rp.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX-r.left-s/2}px;top:${e.clientY-r.top-s/2}px`;
+    b.appendChild(rp); setTimeout(()=>rp.remove(), 750);
+    window.burst(e.clientX, e.clientY, 12);
+  });
+});
+
+/* ===================================================
+   6) SCROLLYTELLING (GSAP)
+   =================================================== */
+/* generic reveals */
+document.querySelectorAll('[data-reveal]').forEach(el=>{
+  gsap.to(el, {opacity:1, y:0, duration:1.15, ease:'expo.out',
+    scrollTrigger:{trigger:el, start:'top 86%', once:true}});
+});
+/* h2 char reveals */
+document.querySelectorAll('[data-split-h2]').forEach(h=>{
+  gsap.to(h.querySelectorAll('.ch'), {y:0, yPercent:0, duration:1.1, ease:'expo.out', stagger:.02,
+    scrollTrigger:{trigger:h, start:'top 84%', once:true}});
+});
+/* fix initial transforms on h2 chars (set via CSS translateY) */
+gsap.set('[data-split-h2] .ch', {yPercent:115});
+gsap.set('#heroTitle .ch', {yPercent:120, rotate:6});
+gsap.set('#nav', {y:'-110%'});
+
+/* counters */
+document.querySelectorAll('[data-count]').forEach(el=>{
+  const end = parseFloat(el.dataset.count), dec = +(el.dataset.dec||0);
+  const o = {v:0};
+  ScrollTrigger.create({trigger:el, start:'top 88%', once:true, onEnter:()=>{
+    gsap.to(o, {v:end, duration:2.1, ease:'expo.out', onUpdate:()=>{ el.textContent = o.v.toLocaleString('en-US',{minimumFractionDigits:dec, maximumFractionDigits:dec}); }});
+  }});
+});
+/* spec bars */
+document.querySelectorAll('.spec-bar').forEach(bar=>{
+  const f = bar.querySelector('.fillv');
+  gsap.to(f, {scaleX: parseFloat(f.style.getPropertyValue('--p'))||1, duration:1.6, ease:'expo.out',
+    scrollTrigger:{trigger:bar, start:'top 88%', once:true}});
+});
+
+/* gallery horizontal pin */
+const gTrack = document.getElementById('gTrack');
+const gpFill = document.getElementById('gpFill');
+const gpCount= document.getElementById('gpCount');
+const gPanels = document.querySelectorAll('.g-panel');
+const gScroll = ()=> Math.max(0, gTrack.scrollWidth - innerWidth + parseFloat(getComputedStyle(gTrack).paddingLeft));
+if (!REDUCE){
+  gsap.to(gTrack, {x: ()=> -gScroll(), ease:'none',
+    scrollTrigger:{
+      trigger:'#gallery', pin:'#galleryPin', start:'top top', anticipatePin:1,
+      end: ()=> '+=' + (gScroll()+innerHeight*.4), scrub:1, invalidateOnRefresh:true,
+      onUpdate: self=>{
+        gpFill.style.transform = `scaleX(${self.progress})`;
+        const i = clamp(Math.floor(self.progress*gPanels.length)+1,1,gPanels.length);
+        gpCount.textContent = String(i).padStart(2,'0')+' / '+String(gPanels.length).padStart(2,'0');
+      }
+    }});
+  /* panel parallax */
+  gPanels.forEach(p=>{
+    gsap.to(p.querySelector('img'), {x:0, scale:1.12, ease:'none'}); // keep scale; parallax below:
+    gsap.fromTo(p.querySelector('img'), {xPercent:-6},{xPercent:6, ease:'none',
+      scrollTrigger:{trigger:'#gallery', start:'top top', end:()=>'+='+gScroll(), scrub:1}});
+  });
+} else {
+  document.getElementById('galleryPin').style.height = 'auto';
+  gTrack.style.overflowX = 'auto';
+}
+
+/* quote parallax bg */
+gsap.fromTo('#quoteBg', {yPercent:-10},{yPercent:10, ease:'none',
+  scrollTrigger:{trigger:'#quote', start:'top bottom', end:'bottom top', scrub:1.2}});
+
+/* hero scroll-out parallax */
+gsap.to('#webgl', {yPercent:14, ease:'none', scrollTrigger:{trigger:'#hero', start:'top top', end:'bottom top', scrub:true}});
+gsap.to('.hero-inner', {yPercent:-18, opacity:.15, ease:'none', scrollTrigger:{trigger:'#hero', start:'top top', end:'bottom top', scrub:true}});
+
+/* ===================================================
+   7) TILT CARDS (3D hover + glare)
+   =================================================== */
+if (!TOUCH) document.querySelectorAll('.tilt-card').forEach(card=>{
+  let raf = null;
+  card.addEventListener('pointermove', e=>{
+    const r = card.getBoundingClientRect();
+    const px = (e.clientX-r.left)/r.width, py = (e.clientY-r.top)/r.height;
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(()=>{
+      card.style.transform = `rotateY(${(px-.5)*14}deg) rotateX(${(.5-py)*12}deg) translateZ(0)`;
+      card.style.setProperty('--gx', (px*100)+'%'); card.style.setProperty('--gy', (py*100)+'%');
+    });
+  });
+  card.addEventListener('pointerleave', ()=>{
+    card.style.transition = 'transform .8s cubic-bezier(.22,1,.36,1), border-color .4s, box-shadow .5s';
+    card.style.transform = 'rotateY(0) rotateX(0)';
+    setTimeout(()=>card.style.transition='border-color .4s, box-shadow .5s', 800);
+  });
+});
+
+/* ===================================================
+   8) THREE.JS — SHARED BUILDERS
+   =================================================== */
+function glowTexture(inner, outer){
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(64,64,4,64,64,62);
+  grd.addColorStop(0, inner); grd.addColorStop(1, outer);
+  g.fillStyle = grd; g.fillRect(0,0,128,128);
+  const t = new THREE.CanvasTexture(c); return t;
+}
+
+const LIVERIES = {
+  crimson: {name:'Crimson Crossing',     paint:0x171016, accent:0xE01E37, glow:0xE01E37, tail:0xFF2E4D},
+  ghost:   {name:'Ghost Lantern',        paint:0x0C1417, accent:0x8FE8F2, glow:0x4FD8E8, tail:0xE01E37},
+  plum:    {name:'Plum Eclipse',         paint:0x1C1118, accent:0xF3A6BF, glow:0xE87AA0, tail:0xE01E37},
+  funeral: {name:'Funeral Parlor Black', paint:0x0A0A0C, accent:0xC9C9D1, glow:0xB9B9C9, tail:0xE01E37}
+};
+
+/* --- procedural hypercar --- */
+function buildCar(opts){
+  const o = Object.assign({paint:0x171016, accent:0xE9B44C, glow:0xE01E37, tail:0xFF2E4D}, opts||{});
+  const car = new THREE.Group();
+  const mats = {};
+
+  mats.paint = new THREE.MeshPhysicalMaterial({color:o.paint, metalness:.82, roughness:.3, clearcoat:1, clearcoatRoughness:.1, reflectivity:.9});
+  mats.accent= new THREE.MeshStandardMaterial({color:o.accent, metalness:.9, roughness:.25, emissive:new THREE.Color(o.accent).multiplyScalar(.18)});
+  mats.carbon= new THREE.MeshStandardMaterial({color:0x0c0c0e, metalness:.6, roughness:.55});
+  mats.glass = new THREE.MeshPhysicalMaterial({color:0x0a1116, metalness:.1, roughness:.05, clearcoat:1, transparent:true, opacity:.92});
+  mats.rubber= new THREE.MeshStandardMaterial({color:0x0f0f10, roughness:.95});
+  mats.rim   = new THREE.MeshStandardMaterial({color:0xC8913F, metalness:1, roughness:.28});
+  mats.brake = new THREE.MeshStandardMaterial({color:0x7A0E1E, metalness:.5, roughness:.4, emissive:0x2a0308});
+  mats.head  = new THREE.MeshStandardMaterial({color:0xffffff, emissive:0xDFF6FF, emissiveIntensity:2.2});
+  mats.tail  = new THREE.MeshStandardMaterial({color:0xff2233, emissive:o.tail, emissiveIntensity:2.6});
+  mats.glowPlane = new THREE.MeshBasicMaterial({map:glowTexture('rgba(255,60,80,.55)','rgba(255,60,80,0)'), transparent:true, blending:THREE.AdditiveBlending, depthWrite:false, color:o.glow});
+
+  /* body — extruded side profile */
+  const s = new THREE.Shape();
+  s.moveTo(-2.28, .30);
+  s.quadraticCurveTo(-2.34, .50, -2.02, .56);          // nose
+  s.quadraticCurveTo(-1.45, .60, -1.15, .66);          // hood
+  s.quadraticCurveTo(-.75, .78, -.30, .86);            // cowl rise
+  s.lineTo(.55, .92);                                   // roof
+  s.quadraticCurveTo(1.15, .88, 1.62, .74);            // rear deck
+  s.quadraticCurveTo(2.10, .66, 2.24, .60);            // tail top
+  s.lineTo(2.26, .42);                                  // tail face
+  s.quadraticCurveTo(1.9, .34, 1.5, .32);              // diffuser tuck
+  s.lineTo(-1.9, .30);                                  // floor
+  s.quadraticCurveTo(-2.2, .28, -2.28, .30);           // close
+  const bodyGeo = new THREE.ExtrudeGeometry(s, {depth:1.42, bevelEnabled:true, bevelThickness:.24, bevelSize:.16, bevelSegments:5, curveSegments:26});
+  bodyGeo.translate(0,0,-.71);
+  const body = new THREE.Mesh(bodyGeo, mats.paint);
+  body.castShadow = true;
+  car.add(body);
+
+  /* glass canopy */
+  const g = new THREE.Shape();
+  g.moveTo(-.92, .64);
+  g.quadraticCurveTo(-.45, .98, 0, 1.0);
+  g.lineTo(.62, .98);
+  g.quadraticCurveTo(.98, .86, 1.02, .64);
+  g.lineTo(-.92, .64);
+  const canopyGeo = new THREE.ExtrudeGeometry(g, {depth:.92, bevelEnabled:true, bevelThickness:.3, bevelSize:.2, bevelSegments:5, curveSegments:20});
+  canopyGeo.translate(0,0,-.46);
+  const canopy = new THREE.Mesh(canopyGeo, mats.glass);
+  car.add(canopy);
+
+  /* gold side blades + skirts */
+  [-1,1].forEach(z=>{
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(2.6,.05,.05), mats.accent);
+    blade.position.set(.15,.44,z*.92); car.add(blade);
+    const skirt = new THREE.Mesh(new THREE.BoxGeometry(2.5,.09,.1), mats.carbon);
+    skirt.position.set(.1,.26,z*.96); car.add(skirt);
+  });
+
+  /* splitter + diffuser */
+  const splitter = new THREE.Mesh(new THREE.BoxGeometry(.5,.05,1.9), mats.carbon);
+  splitter.position.set(-2.2,.26,0); car.add(splitter);
+  const diffuser = new THREE.Mesh(new THREE.BoxGeometry(.4,.16,1.7), mats.carbon);
+  diffuser.position.set(2.18,.3,0); car.add(diffuser);
+  for (let i=-2;i<=2;i++){
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(.36,.2,.02), mats.carbon);
+    fin.position.set(2.2,.34,i*.3); car.add(fin);
+  }
+
+  /* rear wing (butterfly stance) */
+  const wingGr = new THREE.Group();
+  const wing = new THREE.Mesh(new THREE.BoxGeometry(.34,.05,2.0), mats.paint);
+  wing.rotation.z = -.12; wingGr.add(wing);
+  [-1,1].forEach(z=>{
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(.4,.24,.03), mats.accent);
+    plate.position.set(0,.02,z*.99); wingGr.add(plate);
+    const strut = new THREE.Mesh(new THREE.BoxGeometry(.06,.3,.05), mats.carbon);
+    strut.position.set(.05,-.22,z*.55); wingGr.add(strut);
+  });
+  wingGr.position.set(1.95,1.06,0);
+  car.add(wingGr);
+  car.userData.wing = wingGr;
+
+  /* lights: slim LED blades + papilio taillight */
+  [-1,1].forEach(z=>{
+    const hl = new THREE.Mesh(new THREE.BoxGeometry(.3,.045,.12), mats.head);
+    hl.position.set(-2.15,.5,z*.58); hl.rotation.y = z*.35; car.add(hl);
+    const tailWing = new THREE.Mesh(new THREE.BoxGeometry(.06,.05,.8), mats.tail);
+    tailWing.position.set(2.28,.6,z*.5); tailWing.rotation.x = z*-.28; car.add(tailWing);
+  });
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(.05,.04,.9), mats.tail);
+  spine.position.set(2.29,.58,0); car.add(spine);
+
+  /* exhausts */
+  const exhaustMat = new THREE.MeshStandardMaterial({color:0x222, metalness:.9, roughness:.3, emissive:0xFF7A1A, emissiveIntensity:.6});
+  mats.exhaust = exhaustMat;
+  car.userData.exhausts = [];
+  [-1,1].forEach(z=>{
+    const ex = new THREE.Mesh(new THREE.CylinderGeometry(.05,.06,.14,16), exhaustMat);
+    ex.rotation.z = Math.PI/2; ex.position.set(2.3,.42,z*.3); car.add(ex);
+    const flame = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture('rgba(255,150,60,.9)','rgba(255,60,20,0)'), transparent:true, blending:THREE.AdditiveBlending, depthWrite:false}));
+    flame.position.set(2.45,.42,z*.3); flame.scale.setScalar(.001);
+    car.add(flame); car.userData.exhausts.push(flame);
+  });
+
+  /* wheels */
+  const wheels = [];
+  const tireGeo = new THREE.TorusGeometry(.34,.14,16,42);
+  const rimGeo  = new THREE.CylinderGeometry(.24,.24,.16,24); rimGeo.rotateX(Math.PI/2);
+  const spokeGeo= new THREE.BoxGeometry(.05,.42,.06);
+  const discGeo = new THREE.CylinderGeometry(.16,.16,.05,20); discGeo.rotateX(Math.PI/2);
+  [[-1.32,1],[1.32,1],[-1.32,-1],[1.32,-1]].forEach(([x,z])=>{
+    const w = new THREE.Group();
+    w.add(new THREE.Mesh(tireGeo, mats.rubber));
+    const rim = new THREE.Mesh(rimGeo, mats.rim); w.add(rim);
+    for (let i=0;i<5;i++){
+      const sp = new THREE.Mesh(spokeGeo, mats.rim);
+      sp.rotation.z = i*(Math.PI*2/5); w.add(sp);
+    }
+    const disc = new THREE.Mesh(discGeo, mats.brake); w.add(disc);
+    /* fender flare arc */
+    const fend = new THREE.Mesh(new THREE.TorusGeometry(.5,.045,10,24,Math.PI), mats.paint);
+    fend.position.set(0,.1,0); w.add(fend);
+    w.position.set(x,.48,z*.98);
+    if (z<0) w.children.forEach(m=>m.rotation.y = Math.PI); // not needed visually, keeps symmetry
+    car.add(w); wheels.push(w);
+  });
+  car.userData.wheels = wheels;
+
+  /* underglow */
+  const glowPlane = new THREE.Mesh(new THREE.PlaneGeometry(5.4,3), mats.glowPlane);
+  glowPlane.rotation.x = -Math.PI/2; glowPlane.position.y = .12;
+  car.add(glowPlane);
+  const glowLight = new THREE.PointLight(o.glow, 1.4, 6, 2);
+  glowLight.position.set(0,.35,0); car.add(glowLight);
+  mats.glowLight = glowLight;
+
+  car.userData.setLivery = (key)=>{
+    const L = LIVERIES[key]; if (!L) return;
+    gsap.to(mats.paint.color,  {r:new THREE.Color(L.paint).r,  g:new THREE.Color(L.paint).g,  b:new THREE.Color(L.paint).b,  duration:.8});
+    gsap.to(mats.accent.color, {r:new THREE.Color(L.accent).r, g:new THREE.Color(L.accent).g, b:new THREE.Color(L.accent).b, duration:.8});
+    gsap.to(mats.tail.emissive,{r:new THREE.Color(L.tail).r,   g:new THREE.Color(L.tail).g,   b:new THREE.Color(L.tail).b,   duration:.8});
+    gsap.to(mats.glowPlane.color, {r:new THREE.Color(L.glow).r,g:new THREE.Color(L.glow).g,   b:new THREE.Color(L.glow).b,   duration:.8});
+    gsap.to(glowLight.color,   {r:new THREE.Color(L.glow).r,   g:new THREE.Color(L.glow).g,   b:new THREE.Color(L.glow).b,   duration:.8});
+  };
+  return car;
+}
+
+/* --- spirit butterfly geometry (two quads, additive) --- */
+function butterflyGeometry(){
+  const pos = new Float32Array([
+    // left wing
+    0,0,0,  -.16,.10,0,  -.20,-.02,0,
+    0,0,0,  -.20,-.02,0, -.09,-.12,0,
+    // right wing
+    0,0,0,   .20,-.02,0,  .16,.10,0,
+    0,0,0,   .09,-.12,0,  .20,-.02,0
+  ]);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  return geo;
+}
+
+/* --- embers particle field (shader points) --- */
+function makeEmbers(count, area){
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count*3), seed = new Float32Array(count*3), scl = new Float32Array(count);
+  for (let i=0;i<count;i++){
+    pos[i*3]=rand(-area.x,area.x); pos[i*3+1]=rand(0,area.h); pos[i*3+2]=rand(-area.z,area.z);
+    seed[i*3]=Math.random(); seed[i*3+1]=Math.random(); seed[i*3+2]=Math.random();
+    scl[i]=rand(.5,1.6);
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('aSeed', new THREE.BufferAttribute(seed,3));
+  geo.setAttribute('aScale', new THREE.BufferAttribute(scl,1));
+  const mat = new THREE.ShaderMaterial({
+    transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+    uniforms:{uTime:{value:0}, uTex:{value:glowTexture('rgba(255,255,255,1)','rgba(255,255,255,0)')}},
+    vertexShader:`
+      attribute float aScale; attribute vec3 aSeed;
+      uniform float uTime; varying float vA; varying float vHue;
+      void main(){
+        vec3 p = position;
+        float rise = uTime * (0.22 + aSeed.y*0.5);
+        p.y = mod(position.y + rise, 6.0);
+        p.x += sin(uTime*(0.6+aSeed.z) + aSeed.x*40.0)*0.45;
+        p.z += cos(uTime*(0.4+aSeed.x) + aSeed.y*40.0)*0.45;
+        vA = smoothstep(0.0,0.8,p.y) * (1.0 - smoothstep(4.2,6.0,p.y));
+        vHue = aSeed.x;
+        vec4 mv = modelViewMatrix * vec4(p,1.0);
+        gl_PointSize = aScale * (120.0 / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader:`
+      uniform sampler2D uTex; varying float vA; varying float vHue;
+      void main(){
+        vec4 t = texture2D(uTex, gl_PointCoord);
+        vec3 crimson = vec3(1.0,0.24,0.32); vec3 amber = vec3(1.0,0.62,0.18); vec3 ghost = vec3(0.55,0.9,0.95);
+        vec3 col = mix(crimson, amber, smoothstep(0.3,0.75,vHue));
+        col = mix(col, ghost, step(0.92,vHue));
+        gl_FragColor = vec4(col, t.a * vA * 0.9);
+      }`
+  });
+  return new THREE.Points(geo, mat);
+}
+
+/* --- spirit butterflies (instanced) --- */
+function makeButterflies(count, color, spread){
+  const geo = butterflyGeometry();
+  const mat = new THREE.MeshBasicMaterial({color, transparent:true, opacity:.85, side:THREE.DoubleSide, blending:THREE.AdditiveBlending, depthWrite:false});
+  const mesh = new THREE.InstancedMesh(geo, mat, count);
+  const data = [];
+  for (let i=0;i<count;i++){
+    data.push({
+      cx:rand(-spread.x,spread.x), cz:rand(-spread.z,spread.z), r:rand(.8,2.6),
+      h:rand(1.2,4.2), sp:rand(.3,.9), ph:rand(0,7), fl:rand(6,11), s:rand(.7,1.5)
+    });
+  }
+  mesh.userData.update = (t)=>{
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3();
+    data.forEach((d,i)=>{
+      const a = t*d.sp + d.ph;
+      v.set(d.cx + Math.cos(a)*d.r, d.h + Math.sin(t*.8+d.ph*2)*.5, d.cz + Math.sin(a)*d.r);
+      const flap = .55 + Math.abs(Math.sin(t*d.fl + d.ph))*.8;
+      e.set(Math.sin(a)*.3, a + Math.PI/2, Math.sin(t*.7+d.ph)*.35);
+      q.setFromEuler(e);
+      sc.set(d.s*flap, d.s, d.s);
+      m.compose(v,q,sc);
+      mesh.setMatrixAt(i,m);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  };
+  return mesh;
+}
+
+/* --- stage disc + light ring --- */
+function makeStage(){
+  const grp = new THREE.Group();
+  const discC = document.createElement('canvas'); discC.width = discC.height = 512;
+  const g = discC.getContext('2d');
+  const grd = g.createRadialGradient(256,256,30,256,256,256);
+  grd.addColorStop(0,'#241318'); grd.addColorStop(.55,'#120A0D'); grd.addColorStop(1,'rgba(10,7,9,0)');
+  g.fillStyle = grd; g.beginPath(); g.arc(256,256,256,0,7); g.fill();
+  g.strokeStyle = 'rgba(233,180,76,.4)'; g.lineWidth = 2;
+  g.beginPath(); g.arc(256,256,192,0,7); g.stroke();
+  g.strokeStyle = 'rgba(224,30,55,.5)'; g.setLineDash([10,16]);
+  g.beginPath(); g.arc(256,256,212,0,7); g.stroke();
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(6.4,64),
+    new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(discC), transparent:true, depthWrite:false}));
+  disc.rotation.x = -Math.PI/2; disc.position.y = .06;
+  grp.add(disc);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(5.5,.015,8,120),
+    new THREE.MeshBasicMaterial({color:0xE01E37, transparent:true, opacity:.8, blending:THREE.AdditiveBlending}));
+  ring.rotation.x = -Math.PI/2; ring.position.y = .08;
+  grp.add(ring);
+  grp.userData.ring = ring;
+  return grp;
+}
+
+/* ===================================================
+   9) HERO SCENE
+   =================================================== */
+const heroCamera = (()=>{ const api={dollyIn(){}}; return api; })(); // replaced below
+
+const heroScene = (()=>{
+  const holder = document.getElementById('webgl');
+  const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+  renderer.setPixelRatio(DPR);
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.12;
+  holder.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0A0709, .055);
+  const camera = new THREE.PerspectiveCamera(38, innerWidth/innerHeight, .1, 100);
+  camera.position.set(0, 2.1, 14);
+
+  /* lights */
+  scene.add(new THREE.HemisphereLight(0x40303a, 0x0a0608, .75));
+  const key = new THREE.DirectionalLight(0xfff0e8, 1.05); key.position.set(-4,6,5); scene.add(key);
+  const rimR = new THREE.SpotLight(0xE01E37, 2.2, 30, .7, .5); rimR.position.set(7,4,-4); scene.add(rimR);
+  const rimC = new THREE.SpotLight(0x8FE8F2, 1.6, 30, .7, .5); rimC.position.set(-7,3.5,-5); scene.add(rimC);
+  const front = new THREE.PointLight(0xE9B44C, .7, 15); front.position.set(-3,1.5,6); scene.add(front);
+
+  /* stage + car */
+  const stage = makeStage(); scene.add(stage);
+  const carPivot = new THREE.Group(); scene.add(carPivot);
+  const car = buildCar(LIVERIES.crimson); carPivot.add(car);
+
+  /* particles */
+  const embers = makeEmbers(320, {x:9, h:6, z:7}); scene.add(embers);
+  const bfGhost = makeButterflies(26, 0x9BEAF5, {x:6.5,z:5}); scene.add(bfGhost);
+  const bfRed   = makeButterflies(16, 0xFF5468, {x:7.5,z:6}); scene.add(bfRed);
+
+  /* optional bloom (graceful fallback) */
+  let composer = null;
+  try{
+    if (THREE.EffectComposer && THREE.UnrealBloomPass && THREE.RenderPass){
+      composer = new THREE.EffectComposer(renderer);
+      composer.addPass(new THREE.RenderPass(scene, camera));
+      const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight), .55, .8, .82);
+      composer.addPass(bloom);
+    }
+  }catch(e){ composer = null; }
+
+  /* interaction state */
+  const st = { rotY:.6, rotV:0, auto:.16, dragging:false, px:0, camX:0, camY:0,
+               camZ:14, camZT:14, shake:0, wheelSpin:0, excite:0, visible:true };
+  holder.addEventListener('pointerdown', e=>{ st.dragging = true; st.px = e.clientX; });
+  addEventListener('pointermove', e=>{
+    if (st.dragging){ st.rotV = (e.clientX - st.px)*.006; st.rotY += st.rotV; st.px = e.clientX; }
+    st.camX = (e.clientX/innerWidth - .5);
+    st.camY = (e.clientY/innerHeight - .5);
+  }, {passive:true});
+  addEventListener('pointerup', ()=> st.dragging = false);
+
+  new IntersectionObserver(en=>{ st.visible = en[0].isIntersecting; }, {threshold:.02})
+    .observe(document.getElementById('hero'));
+
+  const clock = new THREE.Clock();
+  function frame(){
+    requestAnimationFrame(frame);
+    if (!st.visible) return;
+    const dt = Math.min(clock.getDelta() || .016, .05);
+    const t = clock.elapsedTime;
+
+    if (!st.dragging){ st.rotV *= .95; st.rotY += st.rotV + st.auto*dt*(1+st.excite*2.5); }
+    carPivot.rotation.y = st.rotY;
+    carPivot.position.y = Math.sin(t*1.4)*.02 + st.excite*Math.sin(t*40)*.004;
+
+    car.userData.wheels.forEach(w=>{ w.rotation.z -= st.wheelSpin; });
+    st.wheelSpin = lerp(st.wheelSpin, st.excite*.4, .03);
+
+    car.userData.wing.rotation.z = Math.sin(t*.8)*.05 - st.excite*.12;
+
+    embers.material.uniforms.uTime.value = t*(1+st.excite*1.6);
+    bfGhost.userData.update(t*(1+st.excite*.8));
+    bfRed.userData.update(t*.9);
+    stage.userData.ring.material.opacity = .55 + Math.sin(t*2)*.25 + st.excite*.3;
+
+    /* exhaust flames pulse with excitement */
+    car.userData.exhausts.forEach((f,i)=>{
+      const s = st.excite * (.5 + Math.abs(Math.sin(t*30+i*2))*.9);
+      f.scale.setScalar(Math.max(.001, s));
+    });
+
+    /* camera: mouse parallax + dolly + shake */
+    st.camZ = lerp(st.camZ, st.camZT, .035);
+    const sx = st.shake ? rand(-st.shake,st.shake) : 0;
+    const sy = st.shake ? rand(-st.shake,st.shake) : 0;
+    camera.position.x = lerp(camera.position.x, st.camX*1.6 + sx, .05);
+    camera.position.y = lerp(camera.position.y, 2.1 - st.camY*0.9 + sy, .05);
+    camera.position.z = st.camZ;
+    camera.lookAt(0,.62,0);
+
+    if (REDUCE){ renderer.render(scene,camera); return; }
+    if (composer) composer.render(); else renderer.render(scene,camera);
+  }
+  frame();
+
+  addEventListener('resize', ()=>{
+    camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+    if (composer) composer.setSize(innerWidth, innerHeight);
+  });
+
+  return {
+    state: st,
+    car,
+    dolly(){ gsap.to(st, {camZT: 8.6, duration:2.6, ease:'expo.out'}); },
+    excite(on){ gsap.to(st, {excite: on?1:0, duration:on?1.2:1.6, ease:'power2.out'}); },
+    setLivery(k){ car.userData.setLivery(k); }
+  };
+})();
+
+/* wire the delayed camera dolly into the intro */
+heroCamera.dollyIn = ()=> heroScene.dolly();
+
+/* ===================================================
+   10) LIVERY SCENE (second WebGL context)
+   =================================================== */
+const liveryScene = (()=>{
+  const holder = document.getElementById('webgl-livery');
+  const W = ()=> holder.clientWidth, H = ()=> holder.clientHeight;
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setPixelRatio(DPR); renderer.setSize(W(),H());
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  holder.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(36, W()/H(), .1, 60);
+  camera.position.set(0,2.0,8.8);
+
+  scene.add(new THREE.HemisphereLight(0x453541, 0x0a0608, .9));
+  const key = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(-4,6,5); scene.add(key);
+  const rim = new THREE.SpotLight(0xE01E37, 2.4, 26, .8, .6); rim.position.set(6,4,-4); scene.add(rim);
+  const fill = new THREE.PointLight(0x8FE8F2, .7, 18); fill.position.set(-5,2,4); scene.add(fill);
+
+  const stage = makeStage(); stage.scale.setScalar(.82); scene.add(stage);
+  const pivot = new THREE.Group(); scene.add(pivot);
+  const car = buildCar(LIVERIES.crimson); pivot.add(car);
+
+  const st = {rotY:-.5, rotV:0, dragging:false, px:0, visible:true};
+  holder.addEventListener('pointerdown', e=>{st.dragging=true; st.px=e.clientX;});
+  addEventListener('pointermove', e=>{ if(st.dragging){st.rotV=(e.clientX-st.px)*.007; st.rotY+=st.rotV; st.px=e.clientX;} }, {passive:true});
+  addEventListener('pointerup', ()=> st.dragging=false);
+  new IntersectionObserver(en=> st.visible = en[0].isIntersecting, {threshold:.02}).observe(holder);
+
+  const clock = new THREE.Clock();
+  (function frame(){
+    requestAnimationFrame(frame);
+    if (!st.visible) return;
+    const dt = Math.min(clock.getDelta()||.016,.05), t = clock.elapsedTime;
+    if (!st.dragging){ st.rotV*=.94; st.rotY += st.rotV + .22*dt; }
+    pivot.rotation.y = st.rotY;
+    pivot.position.y = Math.sin(t*1.3)*.02;
+    car.userData.wheels.forEach(w=> w.rotation.z -= .01);
+    stage.userData.ring.material.opacity = .5 + Math.sin(t*2)*.25;
+    renderer.render(scene,camera);
+  })();
+
+  addEventListener('resize', ()=>{ camera.aspect = W()/H(); camera.updateProjectionMatrix(); renderer.setSize(W(),H()); });
+  return { setLivery:k=>car.userData.setLivery(k) };
+})();
+
+/* livery UI */
+document.querySelectorAll('.swatch').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.swatch').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const key = btn.dataset.livery;
+    heroScene.setLivery(key);
+    liveryScene.setLivery(key);
+    document.getElementById('liveryName').textContent = LIVERIES[key].name;
+    const r = btn.getBoundingClientRect();
+    window.burst(r.left+r.width*.5, r.top+r.height*.5, 16);
+  });
+});
+
+/* ===================================================
+   11) ENGINE — WebAudio spirit-flame V12
+   =================================================== */
+const engine = (()=>{
+  let ctx=null, master, oscA, oscB, sub, noise, lfo, filter, on=false, rpmObj={rpm:900};
+  const GEARS = ['N','壹','贰','叁','肆','伍','陆'];
+
+  function build(){
+    ctx = new (window.AudioContext||window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+    filter = ctx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value = 420; filter.Q.value = 6;
+    filter.connect(master);
+    const mk = (type, f)=>{ const o = ctx.createOscillator(); o.type=type; o.frequency.value=f; o.start(); return o; };
+    oscA = mk('sawtooth', 58); oscB = mk('sawtooth', 58.7); sub = mk('square', 29);
+    const gA = ctx.createGain(); gA.gain.value=.5; const gB=ctx.createGain(); gB.gain.value=.4; const gS=ctx.createGain(); gS.gain.value=.5;
+    oscA.connect(gA).connect(filter); oscB.connect(gB).connect(filter); sub.connect(gS).connect(filter);
+    /* exhaust crackle */
+    const nb = ctx.createBuffer(1, ctx.sampleRate*2, ctx.sampleRate);
+    const d = nb.getChannelData(0); for (let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*.6;
+    noise = ctx.createBufferSource(); noise.buffer = nb; noise.loop = true;
+    const nbp = ctx.createBiquadFilter(); nbp.type='bandpass'; nbp.frequency.value = 900; nbp.Q.value = 1.2;
+    const ng = ctx.createGain(); ng.gain.value = .16;
+    noise.connect(nbp).connect(ng).connect(filter); noise.start();
+    /* roughness lfo */
+    lfo = mk('sine', 24); const lg = ctx.createGain(); lg.gain.value = 12; lfo.connect(lg).connect(filter.frequency);
+  }
+  function apply(){
+    const r = rpmObj.rpm;
+    const f = 30 + r*.032;
+    if(!ctx) return;
+    oscA.frequency.setTargetAtTime(f, ctx.currentTime, .05);
+    oscB.frequency.setTargetAtTime(f*1.008, ctx.currentTime, .05);
+    sub.frequency.setTargetAtTime(f*.5, ctx.currentTime, .05);
+    filter.frequency.setTargetAtTime(300 + r*.34, ctx.currentTime, .06);
+    document.getElementById('rpmVal').textContent = Math.round(r).toLocaleString();
+  }
+  function revTo(rpm, dur, cb){
+    gsap.to(rpmObj, {rpm, duration:dur, ease:'power2.inOut', onUpdate:apply, onComplete:cb});
+    gsap.to('#gearVal', {opacity:1, duration:.1});
+  }
+  return {
+    toggle(){
+      if (!ctx) build();
+      if (ctx.state === 'suspended') ctx.resume();
+      on = !on;
+      const btn = document.getElementById('ignition');
+      const hero = document.getElementById('webgl');
+      if (on){
+        btn.classList.add('on'); hero.classList.add('shake');
+        heroScene.excite(true);
+        master.gain.setTargetAtTime(.34, ctx.currentTime, .25);
+        /* ignition rev sequence */
+        let gear = 0;
+        document.getElementById('gearVal').textContent = GEARS[0];
+        const seq = [[2600,.7],[1400,.35],[4200,.8],[2200,.4],[6900,1.2],[3400,.5],[7600,1.4]];
+        let i = 0;
+        const next = ()=>{
+          if (!on || i>=seq.length){ if(on){ revTo(1100,1.2); document.getElementById('gearVal').textContent='N'; } return; }
+          revTo(seq[i][0], seq[i][1], ()=>{ i++; document.getElementById('gearVal').textContent = GEARS[Math.min(i, GEARS.length-1)]; next(); });
+        };
+        revTo(3800, .9, ()=>{ i=0; next(); });
+      } else {
+        btn.classList.remove('on'); hero.classList.remove('shake');
+        heroScene.excite(false);
+        master.gain.setTargetAtTime(0, ctx.currentTime, .3);
+        gsap.killTweensOf(rpmObj);
+        rpmObj.rpm = 0; apply();
+        document.getElementById('rpmVal').textContent = '0';
+        document.getElementById('gearVal').textContent = 'N';
+      }
+    }
+  };
+})();
+document.getElementById('ignitionBtn').addEventListener('click', engine.toggle);
+document.getElementById('filmBtn').addEventListener('click', e=>{
+  engine.toggle();
+  gsap.fromTo(e.currentTarget, {scale:.94}, {scale:1, duration:.6, ease:'back.out(2)'});
+});
+
+/* RPM HUD follow — update via engine.apply already */
+
+/* ===================================================
+   12) RESERVE FORM
+   =================================================== */
+document.getElementById('resForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const input = document.getElementById('resEmail');
+  const msg = document.getElementById('resMsg');
+  const btn = document.getElementById('resBtn');
+  const txt = document.getElementById('resBtnTxt');
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(input.value.trim());
+  if (!ok){
+    msg.textContent = 'The ferryman squints… that address won’t cross the river. Try again?';
+    msg.className = 'res-msg err';
+    gsap.fromTo('#resForm', {x:-8},{x:0, duration:.5, ease:'elastic.out(1,.35)'});
+    return;
+  }
+  btn.classList.add('done'); btn.disabled = true; input.disabled = true;
+  txt.textContent = 'Slot 77/77 — Held';
+  msg.textContent = 'Reserved. Boo Tao has your address — expect a butterfly, not a receipt.';
+  msg.className = 'res-msg ok';
+  const r = btn.getBoundingClientRect();
+  window.burst(r.left+r.width/2, r.top+r.height/2, 40);
+  gsap.fromTo(btn, {scale:.92},{scale:1, duration:.7, ease:'back.out(2.2)'});
+});
+
+/* refresh triggers once fonts/images settle */
+addEventListener('load', ()=> setTimeout(()=>ScrollTrigger.refresh(), 600));
+})();
+</script>
+</body>
+</html>
