@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Float, PresentationControls, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
 import gsap from 'gsap'
-import CarPlaceholder from './CarPlaceholder'
+import { Model as CarModel } from './CarModel'
 import EnvironmentSetup from './EnvironmentSetup'
 import Butterflies from './Butterflies'
 import { useAppStore } from '../store'
@@ -58,7 +58,7 @@ export default function Experience() {
       >
         <group ref={groupRef}>
           <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
-            <CarPlaceholder />
+            <CarModel />
           </Float>
           <ContactShadows position={[0, -1.4, 0]} opacity={0.7} scale={10} blur={2.5} far={4} color="#d9423e" />
         </group>
