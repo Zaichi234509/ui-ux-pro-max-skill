@@ -17,12 +17,23 @@ export default function Overlay() {
         </div>
         <nav className="hidden md:flex gap-8">
           {['VISION', 'PERFORMANCE', 'LEGACY', 'RESERVE'].map((item) => (
-            <a key={item} href="#" className="interactive text-xs tracking-widest hover:text-[#c39a58] transition-colors pointer-events-auto">
+            <a
+              key={item}
+              href="#"
+              onClick={(e) => {
+                e.preventDefault()
+                alert(`${item} — coming soon!`)
+              }}
+              className="interactive text-xs tracking-widest hover:text-[#c39a58] transition-colors pointer-events-auto cursor-pointer"
+            >
               {item}
             </a>
           ))}
         </nav>
-        <button className="interactive md:hidden pointer-events-auto">
+        <button
+          className="interactive md:hidden pointer-events-auto cursor-pointer"
+          onClick={() => alert('Menu — coming soon!')}
+        >
           <div className="w-6 h-px bg-white mb-1.5" />
           <div className="w-4 h-px bg-white ml-auto" />
         </button>
@@ -47,11 +58,17 @@ export default function Overlay() {
           </p>
           
           <div className="flex gap-6 items-center">
-            <button className="interactive pointer-events-auto group flex items-center justify-center gap-3 bg-[#d9423e] text-white px-8 py-4 text-xs tracking-widest hover:bg-[#b0302c] transition-all duration-300">
+            <button
+              className="interactive pointer-events-auto group flex items-center justify-center gap-3 bg-[#d9423e] text-white px-8 py-4 text-xs tracking-widest hover:bg-[#b0302c] transition-all duration-300 cursor-pointer"
+              onClick={() => alert('Exploring Butterfly Embrace model...')}
+            >
               <span>EXPLORE MODEL</span>
               <div className="w-6 h-px bg-white group-hover:w-10 transition-all duration-300" />
             </button>
-            <button className="interactive pointer-events-auto text-[#c39a58] text-xs tracking-widest hover:text-white transition-colors">
+            <button
+              className="interactive pointer-events-auto text-[#c39a58] text-xs tracking-widest hover:text-white transition-colors cursor-pointer"
+              onClick={() => alert('Playing film: Butterfly Embrace — coming soon!')}
+            >
               WATCH FILM
             </button>
           </div>
