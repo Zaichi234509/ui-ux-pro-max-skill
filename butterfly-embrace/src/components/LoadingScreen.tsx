@@ -32,22 +32,22 @@ export default function LoadingScreen() {
     <AnimatePresence>
       {!started && (
         <motion.div
-          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-neutral-950 text-white"
+          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-neutral-950 text-white px-4"
           exit={{ opacity: 0, transition: { duration: 1.5, ease: [0.76, 0, 0.24, 1] } }}
         >
           {/* Logo / Emblem */}
           <motion.div 
-            className="mb-12 relative flex items-center justify-center"
+            className="mb-8 sm:mb-12 relative flex items-center justify-center"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1 }}
           >
-            <div className="w-24 h-24 border border-[#d9423e]/30 rounded-full flex items-center justify-center relative">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 border border-[#d9423e]/30 rounded-full flex items-center justify-center relative">
               <motion.div 
                 className="absolute inset-0 border border-[#d9423e] rounded-full"
                 style={{ clipPath: `polygon(0 0, 100% 0, 100% ${displayProgress}%, 0 ${displayProgress}%)` }}
               />
-              <span className="text-[#c39a58] text-sm tracking-[0.3em] font-light">
+              <span className="text-[#c39a58] text-[clamp(0.75rem,0.7rem+0.2vw,0.875rem)] tracking-[0.3em] font-light">
                 {Math.round(displayProgress)}%
               </span>
             </div>
@@ -62,10 +62,10 @@ export default function LoadingScreen() {
             transition={{ delay: 0.5 }}
             className="text-center"
           >
-            <h1 className="text-3xl tracking-[0.2em] font-light mb-2 text-white/90">
+            <h1 className="text-[clamp(1.5rem,1.2rem+1.5vw,3rem)] tracking-[0.2em] font-light mb-2 text-white/90">
               BUTTERFLY EMBRACE
             </h1>
-            <p className="text-[#c39a58] tracking-widest text-xs uppercase opacity-80">
+            <p className="text-[#c39a58] tracking-widest text-[clamp(0.6rem,0.55rem+0.2vw,0.75rem)] uppercase opacity-80">
               Hu Tao × Ferrari
             </p>
           </motion.div>
@@ -79,7 +79,7 @@ export default function LoadingScreen() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleStart}
-                className="mt-16 px-12 py-4 border border-[#c39a58]/50 text-[#c39a58] tracking-[0.3em] text-sm hover:bg-[#c39a58]/10 transition-colors duration-500 rounded-sm relative overflow-hidden group"
+                className="interactive mt-10 sm:mt-14 md:mt-16 px-8 sm:px-10 md:px-12 py-3 sm:py-4 min-h-[44px] border border-[#c39a58]/50 text-[#c39a58] tracking-[0.3em] text-[clamp(0.7rem,0.65rem+0.2vw,0.875rem)] hover:bg-[#c39a58]/10 transition-colors duration-500 rounded-sm relative overflow-hidden group"
               >
                 <span className="relative z-10">IGNITE ENGINE</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#d9423e]/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
