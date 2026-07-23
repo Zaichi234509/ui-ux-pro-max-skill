@@ -1607,6 +1607,128 @@ function makeButterflies(count, color, spread){
   return mesh;
 }
 
+/* --- studio wall backdrop with image effect --- */
+function createStudioWall() {
+  const wallCanvas = document.createElement('canvas');
+  wallCanvas.width = 2048;
+  wallCanvas.height = 1024;
+  const ctx = wallCanvas.getContext('2d');
+  
+  // Create gradient background (dark to lighter for depth)
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, 1024);
+  bgGrad.addColorStop(0, '#1a1520');     // Dark purple-black at top
+  bgGrad.addColorStop(0.3, '#251a2a');    // Transition
+  bgGrad.addColorStop(0.6, '#1e1a22');    // Mid gray-purple
+  bgGrad.addColorStop(1, '#151218');      // Dark at bottom
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, 2048, 1024);
+  
+  // Add atmospheric gradient overlay
+  const atmosGrad = ctx.createRadialGradient(1024, 400, 50, 1024, 400, 900);
+  atmosGrad.addColorStop(0, 'rgba(224, 30, 55, 0.08)');    // Crimson glow center
+  atmosGrad.addColorStop(0.5, 'rgba(139, 100, 160, 0.05)');
+  atmosGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = atmosGrad;
+  ctx.fillRect(0, 0, 2048, 1024);
+  
+  // Add subtle vertical gradient stripes for depth
+  for (let i = 0; i < 12; i++) {
+    const x = i * 180 + 50;
+    const stripeGrad = ctx.createLinearGradient(x, 0, x + 60, 0);
+    stripeGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    stripeGrad.addColorStop(0.5, 'rgba(40, 30, 45, 0.15)');
+    stripeGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = stripeGrad;
+    ctx.fillRect(x, 0, 60, 1024);
+  }
+  
+  // Add horizontal light wash (simulates overhead studio lights)
+  const lightWash = ctx.createLinearGradient(0, 0, 0, 300);
+  lightWash.addColorStop(0, 'rgba(255, 250, 245, 0.12)');
+  lightWash.addColorStop(1, 'rgba(255, 250, 245, 0)');
+  ctx.fillStyle = lightWash;
+  ctx.fillRect(0, 0, 2048, 300);
+  
+  // Add gold accent lines (architectural detail)
+  ctx.strokeStyle = 'rgba(233, 180, 76, 0.3)';
+  ctx.lineWidth = 2;
+  
+  // Horizontal gold lines
+  ctx.beginPath();
+  ctx.moveTo(100, 150);
+  ctx.lineTo(800, 150);
+  ctx.stroke();
+  
+  ctx.beginPath();
+  ctx.moveTo(1248, 150);
+  ctx.lineTo(1948, 150);
+  ctx.stroke();
+  
+  // Vertical gold accent lines
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(224, 30, 55, 0.25)';
+  
+  // Left side vertical line
+  ctx.beginPath();
+  ctx.moveTo(150, 200);
+  ctx.lineTo(150, 800);
+  ctx.stroke();
+  
+  // Right side vertical line
+  ctx.beginPath();
+  ctx.moveTo(1898, 200);
+  ctx.lineTo(1898, 800);
+  ctx.stroke();
+  
+  // Add subtle vignette effect
+  const vignette = ctx.createRadialGradient(1024, 512, 200, 1024, 512, 1400);
+  vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  vignette.addColorStop(0.7, 'rgba(0, 0, 0, 0.1)');
+  vignette.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, 2048, 1024);
+  
+  // Add "WANGSHENG SPEEDWORKS" text watermark
+  ctx.font = 'bold 28px Arial';
+  ctx.fillStyle = 'rgba(233, 180, 76, 0.15)';
+  ctx.textAlign = 'right';
+  ctx.fillText('WANGSHENG SPEEDWORKS', 1950, 950);
+  
+  // Add decorative corner elements
+  ctx.strokeStyle = 'rgba(233, 180, 76, 0.4)';
+  ctx.lineWidth = 3;
+  
+  // Top-left corner
+  ctx.beginPath();
+  ctx.moveTo(50, 80);
+  ctx.lineTo(50, 50);
+  ctx.lineTo(80, 50);
+  ctx.stroke();
+  
+  // Top-right corner
+  ctx.beginPath();
+  ctx.moveTo(1968, 50);
+  ctx.lineTo(1998, 50);
+  ctx.lineTo(1998, 80);
+  ctx.stroke();
+  
+  // Bottom corners
+  ctx.beginPath();
+  ctx.moveTo(50, 920);
+  ctx.lineTo(50, 950);
+  ctx.lineTo(80, 950);
+  ctx.stroke();
+  
+  ctx.beginPath();
+  ctx.moveTo(1968, 950);
+  ctx.lineTo(1998, 950);
+  ctx.lineTo(1998, 920);
+  ctx.stroke();
+  
+  const wallTex = new THREE.CanvasTexture(wallCanvas);
+  return wallTex;
+}
+
 /* --- studio environment for black car visibility --- */
 function createStudioEnvironment() {
   const studio = new THREE.Group();
@@ -1867,6 +1989,19 @@ const heroScene = (()=>{
   // Add studio environment for better black car visibility
   const studio = createStudioEnvironment(); scene.add(studio);
   
+  // Add dramatic wall backdrop behind the car
+  const wallTex = createStudioWall();
+  const wallGeo = new THREE.PlaneGeometry(120, 60);
+  const wallMat = new THREE.MeshStandardMaterial({
+    map: wallTex,
+    roughness: 0.85,
+    metalness: 0.05,
+    envMapIntensity: 0.2
+  });
+  const wall = new THREE.Mesh(wallGeo, wallMat);
+  wall.position.set(0, 25, -55);
+  scene.add(wall);
+  
   const carPivot = new THREE.Group(); 
   carPivot.scale.setScalar(8.2); // ABSURD LEVIATHAN — car FILLS viewport, pulls up huge
   carPivot.position.z = -4; // pulled forward toward camera
@@ -2020,6 +2155,20 @@ const liveryScene = (()=>{
   const liveryStudio = createStudioEnvironment(); 
   liveryStudio.scale.setScalar(0.6);
   scene.add(liveryStudio);
+  
+  // Add wall backdrop for livery scene
+  const liveryWallTex = createStudioWall();
+  const liveryWallGeo = new THREE.PlaneGeometry(80, 40);
+  const liveryWallMat = new THREE.MeshStandardMaterial({
+    map: liveryWallTex,
+    roughness: 0.85,
+    metalness: 0.05,
+    envMapIntensity: 0.2
+  });
+  const liveryWall = new THREE.Mesh(liveryWallGeo, liveryWallMat);
+  liveryWall.position.set(0, 18, -45);
+  scene.add(liveryWall);
+  
   const pivot = new THREE.Group(); scene.add(pivot);
   pivot.position.z = -3;
   pivot.position.x = 0.8;
