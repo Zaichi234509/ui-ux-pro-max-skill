@@ -19,6 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
@@ -823,6 +824,9 @@ const DPR    = Math.min(window.devicePixelRatio||1, 1.75);
    1) PRELOADER — real asset preload + smooth counter
    =================================================== */
 const ASSETS = ['assets/hero.jpg','assets/car-side.jpg','assets/car-rear.jpg','assets/car-interior.jpg','assets/gallery-drift.jpg','assets/gallery-city.jpg','assets/hutao-portrait.jpg'];
+/* GLB is loaded separately via GLTFLoader (see loadCar() below).
+   We reserve one slot in the loader so the % counter includes it. */
+const TOTAL_PARTS = ASSETS.length + 1; // +1 for the GLB
 const pctEl  = document.getElementById('pct');
 const fillEl = document.getElementById('loadFill');
 let loaded = 0, shownPct = 0, loadedAll = false;
@@ -835,7 +839,7 @@ ASSETS.forEach(src=>{
 setTimeout(()=>{ loadedAll = true; }, 4200); // hard cap — never trap the user
 
 const loadTick = ()=>{
-  const real = (loaded/ASSETS.length)*100;
+  const real = (loaded/TOTAL_PARTS)*100;
   const cap  = loadedAll ? 100 : Math.max(real, 96*Math.min(1,(performance.now()-t0Load)/2600));
   shownPct = lerp(shownPct, Math.min(cap, 100), 0.08);
   pctEl.textContent = String(Math.floor(shownPct)).padStart(2,'0');
@@ -1139,6 +1143,231 @@ const LIVERIES = {
   funeral: {name:'Funeral Parlor Black', paint:0x0A0A0C, accent:0xC9C9D1, glow:0xB9B9C9, tail:0xE01E37}
 };
 
+/* ===================================================
+   8a) GLB CAR LOADER  (replaces the procedural car in both scenes)
+   =================================================== */
+/*
+   The bundled papilio-gt77.glb is a single 80k-triangle mesh exported via
+   trimesh. The source coordinate system is non-standard (Y = length,
+   X = width, Z = height). On load we:
+     - center the model on the ground plane (Y=0)
+     - uniform-scale it so its long axis matches the procedural car's
+       body length (~4.5 units)
+     - rotate it so +X is "forward" in world space (matches the existing
+       turntable rotation that turns the car around its Y axis)
+     - make every texture sRGB so colors aren't washed out
+     - expose a .setLivery(key) hook that tints the baked-in material
+       to match the current LIVERIES swatch.
+*/
+let _glbCarPromise = null; // shared between hero + livery scenes (one fetch)
+let _glbCarObject  = null; // cached THREE.Group, deep-cloned per scene
+const GLB_URL = 'assets/papilio-gt77.glb';
+const TARGET_LENGTH = 4.5; // world units (matches procedural car body)
+
+function loadCar(opts){
+  const o = Object.assign({paint:0x171016, accent:0xE9B44C, glow:0xE01E37, tail:0xFF2E4D}, opts||{});
+  // Return a Group synchronously if the GLB is already cached, otherwise
+  // return a placeholder that gets swapped in once loading finishes.
+  const placeholder = new THREE.Group();
+  placeholder.userData.pending = true;
+  placeholder.userData.setLivery = ()=>{};
+  /* Compatibility shims — the hero/livery frame loops look for these on
+     `car.userData`. We expose safe no-ops so the loops don't crash while
+     the GLB is still in flight, and we wire them to nothing on the GLB
+     (the GLB doesn't have separate wheels/wing/exhausts — it's one mesh). */
+  placeholder.userData.wheels   = [];
+  placeholder.userData.wing     = new THREE.Object3D(); // empty placeholder
+  placeholder.userData.exhausts = [];
+  if (!_glbCarPromise) _glbCarPromise = _fetchGlbCar();
+  _glbCarPromise
+    .then(src=>{
+      // Deep-clone so each scene has its own material instances
+      // (lets the two scenes be tinted independently if needed).
+      const inst = _cloneGltf(src);
+      // Auto-fit: center on ground + scale to TARGET_LENGTH on the model's
+      // current long axis (Y) and rotate so Y becomes world X (forward).
+      _fitToFootprint(inst);
+      // Wire the livery tint
+      inst.userData.setLivery = (key)=>_tintGltf(inst, LIVERIES[key]);
+      // Apply initial livery
+      inst.userData.setLivery('crimson');
+      // Swap into the scene graph
+      while (placeholder.children.length) placeholder.remove(placeholder.children[0]);
+      inst.children.forEach(c=>placeholder.add(c));
+      placeholder.userData.pending = false;
+      placeholder.userData.realObj = inst;
+      // Mark the preloader "GLB" slot as done
+      loaded++;
+    })
+    .catch(err=>{
+      console.warn('[loadCar] GLB load failed, falling back to procedural car:', err);
+      const fb = buildCar(LIVERIES.crimson);
+      while (placeholder.children.length) placeholder.remove(placeholder.children[0]);
+      fb.children.forEach(c=>placeholder.add(c));
+      placeholder.userData.pending = false;
+      placeholder.userData.realObj = fb;
+      placeholder.userData.setLivery = (k)=>fb.userData.setLivery(k);
+      // Re-point the frame-loop shims at the fallback's parts
+      placeholder.userData.wheels   = fb.userData.wheels;
+      placeholder.userData.wing     = fb.userData.wing;
+      placeholder.userData.exhausts = fb.userData.exhausts;
+      loaded++; // still count so preloader finishes
+    });
+  return placeholder;
+}
+
+function _fetchGlbCar(){
+  return new Promise((resolve, reject)=>{
+    if (typeof THREE.GLTFLoader !== 'function') return reject(new Error('GLTFLoader missing'));
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      GLB_URL,
+      gltf=>{
+        const root = gltf.scene || gltf.scenes[0];
+        if (!root) return reject(new Error('GLB has no scene'));
+        // Make all textures sRGB (Three.js r128 doesn't auto-detect this from GLB)
+        root.traverse(o=>{
+          if (o.isMesh && o.material){
+            const mats = Array.isArray(o.material) ? o.material : [o.material];
+            mats.forEach(m=>{
+              if (m.map){ m.map.encoding = THREE.sRGBEncoding; m.map.needsUpdate = true; }
+              if (m.emissiveMap){ m.emissiveMap.encoding = THREE.sRGBEncoding; m.emissiveMap.needsUpdate = true; }
+              m.needsUpdate = true;
+            });
+            o.castShadow = true; o.receiveShadow = true;
+          }
+        });
+        resolve(root);
+      },
+      undefined,
+      err=>reject(err)
+    );
+  });
+}
+
+function _cloneGltf(root){
+  const clone = root.clone(true);
+  // Re-traverse and give every Mesh a *fresh* material so two scenes can
+  // be tinted independently. Skinned meshes aren't expected here.
+  clone.traverse(o=>{
+    if (o.isMesh){
+      o.material = Array.isArray(o.material)
+        ? o.material.map(m=>m.clone())
+        : o.material.clone();
+    }
+  });
+  return clone;
+}
+
+function _fitToFootprint(obj){
+  // 1) Compute the geometry's *robust* bounding box.
+  //    We can't trust THREE.Box3().setFromObject() because some GLB
+  //    exports (e.g. trimesh) ship with NaN / sentinel vertices that
+  //    explode the box. We instead gather every vertex position and
+  //    use percentile-based bounds (drop the 0.1% extreme outliers).
+  const positions = []; // flat [x,y,z, x,y,z, ...]
+  obj.traverse(o=>{
+    if (o.isMesh && o.geometry && o.geometry.attributes.position){
+      const attr = o.geometry.attributes.position;
+      for (let i = 0; i < attr.count; i++){
+        positions.push(attr.getX(i), attr.getY(i), attr.getZ(i));
+      }
+    }
+  });
+  if (!positions.length) return; // nothing to fit
+  // 2) Compute per-axis percentiles (0.1% to 99.9%)
+  const xs = [], ys = [], zs = [];
+  for (let i = 0; i < positions.length; i += 3){
+    xs.push(positions[i]); ys.push(positions[i+1]); zs.push(positions[i+2]);
+  }
+  xs.sort((a,b)=>a-b); ys.sort((a,b)=>a-b); zs.sort((a,b)=>a-b);
+  const lo = 0.001, hi = 0.999;
+  const p = (arr, q) => arr[Math.max(0, Math.min(arr.length-1, Math.floor(q*arr.length)))];
+  const minX = p(xs, lo), maxX = p(xs, hi);
+  const minY = p(ys, lo), maxY = p(ys, hi);
+  const minZ = p(zs, lo), maxZ = p(zs, hi);
+  const spanX = maxX - minX, spanY = maxY - minY, spanZ = maxZ - minZ;
+  // 3) Find the long axis
+  let longAxis = 'x';
+  if (spanY >= spanX && spanY >= spanZ) longAxis = 'y';
+  else if (spanZ >= spanX && spanZ >= spanY) longAxis = 'z';
+  const longSpan = (longAxis === 'x' ? spanX : longAxis === 'y' ? spanY : spanZ) || 1;
+  // 4) Uniform scale so longSpan becomes TARGET_LENGTH
+  const s = TARGET_LENGTH / longSpan;
+  obj.scale.setScalar(s);
+  obj.updateMatrixWorld(true);
+  // 5) Rotate the model so its long axis aligns with world +X
+  if (longAxis === 'y') obj.rotation.z = -Math.PI / 2;
+  else if (longAxis === 'z') obj.rotation.y = Math.PI / 2;
+  obj.updateMatrixWorld(true);
+  // 6) Use the SAME percentile-based approach for the final translation
+  //    (Box3().setFromObject() would pick up outlier vertices and give
+  //    a wrong minY/center).
+  // Sample post-transform vertex positions to compute the final bbox
+  const finalPositions = [];
+  obj.updateMatrixWorld(true);
+  obj.traverse(o=>{
+    if (o.isMesh && o.geometry && o.geometry.attributes.position){
+      const attr = o.geometry.attributes.position;
+      const m = o.matrixWorld;
+      const v = new THREE.Vector3();
+      for (let i = 0; i < attr.count; i++){
+        v.set(attr.getX(i), attr.getY(i), attr.getZ(i)).applyMatrix4(m);
+        finalPositions.push(v.x, v.y, v.z);
+      }
+    }
+  });
+  const fxs = [], fys = [], fzs = [];
+  for (let i = 0; i < finalPositions.length; i += 3){
+    fxs.push(finalPositions[i]);
+    fys.push(finalPositions[i+1]);
+    fzs.push(finalPositions[i+2]);
+  }
+  fxs.sort((a,b)=>a-b); fys.sort((a,b)=>a-b); fzs.sort((a,b)=>a-b);
+  const fminX = p(fxs, lo), fmaxX = p(fxs, hi);
+  const fminY = p(fys, lo), fmaxY = p(fys, hi);
+  const fminZ = p(fzs, lo), fmaxZ = p(fzs, hi);
+  const centerX = (fminX + fmaxX) / 2;
+  const centerZ = (fminZ + fmaxZ) / 2;
+  // Translate so model sits on Y=0 and is centered on X/Z
+  obj.position.x = -centerX;
+  obj.position.y = -fminY;
+  obj.position.z = -centerZ;
+  obj.updateMatrixWorld(true);
+}
+
+function _tintGltf(obj, livery){
+  if (!livery) return;
+  const paintCol   = new THREE.Color(livery.paint);
+  const accentCol  = new THREE.Color(livery.accent);
+  obj.traverse(o=>{
+    if (!o.isMesh || !o.material) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    mats.forEach(m=>{
+      // The GLB uses a single texture + PBR. We tint by setting the
+      // baseColorFactor toward the swatch's *accent* color (so the
+      // two-tone reads as: warm paint on top, accent hue dominating
+      // on the body's lower third via the existing UV atlas).
+      // We keep some texture influence so the model still reads as
+      // a detailed hypercar rather than a flat-colored blob.
+      if (m.color){
+        m.color.lerpColors(paintCol, accentCol, 0.45);
+        // gently nudge brightness toward the livery's paint
+        const c = m.color;
+        c.r = c.r * 0.85 + paintCol.r * 0.15;
+        c.g = c.g * 0.85 + paintCol.g * 0.15;
+        c.b = c.b * 0.85 + paintCol.b * 0.15;
+      }
+      // Slight emissive tint from accent so the car "breathes" the
+      // livery's signature color in dim lighting.
+      if (m.emissive){
+        m.emissive.copy(accentCol).multiplyScalar(0.08);
+      }
+      m.needsUpdate = true;
+    });
+  });
+}
+
 /* --- procedural hypercar --- */
 function buildCar(opts){
   const o = Object.assign({paint:0x171016, accent:0xE9B44C, glow:0xE01E37, tail:0xFF2E4D}, opts||{});
@@ -1425,7 +1654,7 @@ const heroScene = (()=>{
   /* stage + car */
   const stage = makeStage(); scene.add(stage);
   const carPivot = new THREE.Group(); scene.add(carPivot);
-  const car = buildCar(LIVERIES.crimson); carPivot.add(car);
+  const car = loadCar(LIVERIES.crimson); carPivot.add(car);
 
   /* particles */
   const embers = makeEmbers(320, {x:9, h:6, z:7}); scene.add(embers);
@@ -1540,7 +1769,7 @@ const liveryScene = (()=>{
 
   const stage = makeStage(); stage.scale.setScalar(.82); scene.add(stage);
   const pivot = new THREE.Group(); scene.add(pivot);
-  const car = buildCar(LIVERIES.crimson); pivot.add(car);
+  const car = loadCar(LIVERIES.crimson); pivot.add(car);
 
   const st = {rotY:-.5, rotV:0, dragging:false, px:0, visible:true};
   holder.addEventListener('pointerdown', e=>{st.dragging=true; st.px=e.clientX;});
