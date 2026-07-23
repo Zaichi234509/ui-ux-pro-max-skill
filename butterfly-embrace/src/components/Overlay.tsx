@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion'
 import { Flame } from 'lucide-react'
+import { useState } from 'react'
+import SectionsOverlay from './SectionsOverlay'
 
 export default function Overlay() {
+  const [activeSection, setActiveSection] = useState<'VISION' | 'PERFORMANCE' | 'LEGACY' | 'RESERVE' | null>(null)
   return (
     <div className="w-full h-full flex flex-col justify-between p-8 md:p-12 text-white overflow-hidden">
       {/* Header */}
@@ -22,7 +25,7 @@ export default function Overlay() {
               href="#"
               onClick={(e) => {
                 e.preventDefault()
-                alert(`${item} — coming soon!`)
+                setActiveSection(item as 'VISION' | 'PERFORMANCE' | 'LEGACY' | 'RESERVE')
               }}
               className="interactive text-xs tracking-widest hover:text-[#c39a58] transition-colors pointer-events-auto cursor-pointer"
             >
@@ -32,7 +35,7 @@ export default function Overlay() {
         </nav>
         <button
           className="interactive md:hidden pointer-events-auto cursor-pointer"
-          onClick={() => alert('Menu — coming soon!')}
+          onClick={() => setActiveSection('VISION')}
         >
           <div className="w-6 h-px bg-white mb-1.5" />
           <div className="w-4 h-px bg-white ml-auto" />
@@ -60,14 +63,14 @@ export default function Overlay() {
           <div className="flex gap-6 items-center">
             <button
               className="interactive pointer-events-auto group flex items-center justify-center gap-3 bg-[#d9423e] text-white px-8 py-4 text-xs tracking-widest hover:bg-[#b0302c] transition-all duration-300 cursor-pointer"
-              onClick={() => alert('Exploring Butterfly Embrace model...')}
+              onClick={() => setActiveSection('VISION')}
             >
               <span>EXPLORE MODEL</span>
               <div className="w-6 h-px bg-white group-hover:w-10 transition-all duration-300" />
             </button>
             <button
               className="interactive pointer-events-auto text-[#c39a58] text-xs tracking-widest hover:text-white transition-colors cursor-pointer"
-              onClick={() => alert('Playing film: Butterfly Embrace — coming soon!')}
+              onClick={() => setActiveSection('LEGACY')}
             >
               WATCH FILM
             </button>
@@ -101,6 +104,9 @@ export default function Overlay() {
           FERRARI × GENSHIN IMPACT
         </div>
       </motion.footer>
+
+      {/* Interactive Section Overlays */}
+      <SectionsOverlay active={activeSection} onClose={() => setActiveSection(null)} />
     </div>
   )
 }
