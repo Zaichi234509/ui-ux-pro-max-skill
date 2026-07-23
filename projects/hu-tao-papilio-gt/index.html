@@ -726,12 +726,12 @@ footer .sig{font-family:var(--font-brush);color:var(--crimson);font-size:1.1rem;
     </div>
     <div class="livery-ctrl" data-reveal>
       <h3>Midnight Lacquer</h3>
-      <button class="swatch" data-livery="original" data-cursor="link">
+      <button class="swatch active" data-livery="original" data-cursor="link">
         <span class="dots"><i style="background:#888888"></i><i style="background:#EEEEEE"></i><i style="background:#D4AF37"></i></span>
         <span class="meta"><b>Original GLB</b><small>Show original un-tinted 3D textures</small></span>
         <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
       </button>
-      <button class="swatch active" data-livery="crimson" data-cursor="link">
+      <button class="swatch" data-livery="crimson" data-cursor="link">
         <span class="dots"><i style="background:#171016"></i><i style="background:#E01E37"></i><i style="background:#E9B44C"></i></span>
         <span class="meta"><b>Crimson Crossing</b><small>Obsidian · crimson · gold pinstripe</small></span>
         <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
@@ -751,7 +751,7 @@ footer .sig{font-family:var(--font-brush);color:var(--crimson);font-size:1.1rem;
         <span class="meta"><b>Funeral Parlor Black</b><small>Pure obsidian · bone silver · red seal</small></span>
         <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
       </button>
-      <div class="livery-out">Selected — <b id="liveryName">Crimson Crossing</b> · lacquer deposit <b>₳7,700</b></div>
+      <div class="livery-out">Selected — <b id="liveryName">Original GLB</b> · lacquer deposit <b>₳7,700</b></div>
     </div>
   </div>
 </section>
@@ -1201,7 +1201,7 @@ function loadCar(opts){
       // Wire the livery tint
       inst.userData.setLivery = (key)=>_tintGltf(inst, key);
       // Apply initial livery
-      inst.userData.setLivery('crimson');
+      inst.userData.setLivery('original');
       // Swap into the scene graph
       while (placeholder.children.length) placeholder.remove(placeholder.children[0]);
       inst.children.forEach(c=>placeholder.add(c));
