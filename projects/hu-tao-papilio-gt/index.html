@@ -1607,27 +1607,188 @@ function makeButterflies(count, color, spread){
   return mesh;
 }
 
-/* --- stage disc + light ring --- */
+/* --- studio environment for black car visibility --- */
+function createStudioEnvironment() {
+  const studio = new THREE.Group();
+  
+  // Create gradient studio floor - warm gray to contrast with black car
+  const floorCanvas = document.createElement('canvas');
+  floorCanvas.width = 1024;
+  floorCanvas.height = 1024;
+  const fg = floorCanvas.getContext('2d');
+  
+  // Create a studio floor gradient - light center, darker edges
+  const floorGrad = fg.createRadialGradient(512, 512, 50, 512, 512, 512);
+  floorGrad.addColorStop(0, '#2a2530');    // Light center - warm gray
+  floorGrad.addColorStop(0.3, '#1e1a22');   // Transition
+  floorGrad.addColorStop(0.7, '#151218');   // Darker
+  floorGrad.addColorStop(1, '#0a0709');     // Near black at edges
+  fg.fillStyle = floorGrad;
+  fg.fillRect(0, 0, 1024, 1024);
+  
+  // Add subtle grid lines for depth perception
+  fg.strokeStyle = 'rgba(233, 180, 76, 0.08)';
+  fg.lineWidth = 1;
+  for (let i = 0; i <= 16; i++) {
+    const pos = i * 64;
+    fg.beginPath();
+    fg.moveTo(pos, 0);
+    fg.lineTo(pos, 1024);
+    fg.stroke();
+    fg.beginPath();
+    fg.moveTo(0, pos);
+    fg.lineTo(1024, pos);
+    fg.stroke();
+  }
+  
+  // Add circular guide rings
+  fg.strokeStyle = 'rgba(224, 30, 55, 0.15)';
+  fg.lineWidth = 2;
+  [128, 256, 384, 512].forEach(r => {
+    fg.beginPath();
+    fg.arc(512, 512, r, 0, Math.PI * 2);
+    fg.stroke();
+  });
+  
+  const floorTex = new THREE.CanvasTexture(floorCanvas);
+  floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+  floorTex.repeat.set(1, 1);
+  
+  // Large studio floor plane
+  const floorGeo = new THREE.PlaneGeometry(200, 200);
+  const floorMat = new THREE.MeshStandardMaterial({
+    map: floorTex,
+    roughness: 0.7,
+    metalness: 0.1,
+    envMapIntensity: 0.3
+  });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -5;
+  floor.receiveShadow = true;
+  studio.add(floor);
+  
+  // Studio back wall (subtle)
+  const wallCanvas = document.createElement('canvas');
+  wallCanvas.width = 512;
+  wallCanvas.height = 512;
+  const wg = wallCanvas.getContext('2d');
+  const wallGrad = wg.createLinearGradient(0, 0, 0, 512);
+  wallGrad.addColorStop(0, '#0a0709');
+  wallGrad.addColorStop(0.5, '#151218');
+  wallGrad.addColorStop(1, '#1e1a22');
+  wg.fillStyle = wallGrad;
+  wg.fillRect(0, 0, 512, 512);
+  
+  // Add subtle vertical lines
+  wg.strokeStyle = 'rgba(233, 180, 76, 0.05)';
+  wg.lineWidth = 1;
+  for (let i = 0; i <= 8; i++) {
+    wg.beginPath();
+    wg.moveTo(i * 64, 0);
+    wg.lineTo(i * 64, 512);
+    wg.stroke();
+  }
+  
+  const wallTex = new THREE.CanvasTexture(wallCanvas);
+  const wallGeo = new THREE.PlaneGeometry(150, 80);
+  const wallMat = new THREE.MeshStandardMaterial({
+    map: wallTex,
+    roughness: 0.9,
+    metalness: 0,
+    envMapIntensity: 0.1
+  });
+  const wall = new THREE.Mesh(wallGeo, wallMat);
+  wall.position.set(0, 35, -60);
+  studio.add(wall);
+  
+  // Light strips on the floor for dramatic effect
+  const stripMat = new THREE.MeshBasicMaterial({
+    color: 0xE9B44C,
+    transparent: true,
+    opacity: 0.6,
+    blending: THREE.AdditiveBlending
+  });
+  
+  // Front light strip
+  const stripGeo1 = new THREE.BoxGeometry(30, 0.1, 0.3);
+  const strip1 = new THREE.Mesh(stripGeo1, stripMat);
+  strip1.position.set(0, -4.9, 15);
+  studio.add(strip1);
+  
+  // Side light strips
+  [-20, 20].forEach(x => {
+    const stripGeo = new THREE.BoxGeometry(0.3, 0.1, 25);
+    const strip = new THREE.Mesh(stripGeo, stripMat);
+    strip.position.set(x, -4.9, 0);
+    studio.add(strip);
+  });
+  
+  // Accent light strips (crimson)
+  const crimsonStripMat = new THREE.MeshBasicMaterial({
+    color: 0xE01E37,
+    transparent: true,
+    opacity: 0.4,
+    blending: THREE.AdditiveBlending
+  });
+  
+  const stripGeo2 = new THREE.BoxGeometry(25, 0.1, 0.3);
+  const strip2 = new THREE.Mesh(stripGeo2, crimsonStripMat);
+  strip2.position.set(0, -4.9, -20);
+  studio.add(strip2);
+  
+  // Point lights at strip positions for glow effect
+  const goldLight = new THREE.PointLight(0xE9B44C, 0.8, 30);
+  goldLight.position.set(0, -3, 12);
+  studio.add(goldLight);
+  
+  const crimsonLight = new THREE.PointLight(0xE01E37, 0.6, 25);
+  crimsonLight.position.set(0, -3, -18);
+  studio.add(crimsonLight);
+  
+  return studio;
+}
+
+/* --- stage disc + light ring (enhanced for visibility) --- */
 function makeStage(){
   const grp = new THREE.Group();
   const discC = document.createElement('canvas'); discC.width = discC.height = 512;
   const g = discC.getContext('2d');
+  // Enhanced gradient - lighter center to contrast with black car
   const grd = g.createRadialGradient(256,256,30,256,256,256);
-  grd.addColorStop(0,'#241318'); grd.addColorStop(.55,'#120A0D'); grd.addColorStop(1,'rgba(10,7,9,0)');
+  grd.addColorStop(0,'#3a3040');    // Lighter center - warm gray/purple
+  grd.addColorStop(.4,'#2a2230');   // Mid transition
+  grd.addColorStop(.7,'#1a1218');   // Darker
+  grd.addColorStop(1,'rgba(10,7,9,0)');
   g.fillStyle = grd; g.beginPath(); g.arc(256,256,256,0,7); g.fill();
-  g.strokeStyle = 'rgba(233,180,76,.4)'; g.lineWidth = 2;
-  g.beginPath(); g.arc(256,256,192,0,7); g.stroke();
-  g.strokeStyle = 'rgba(224,30,55,.5)'; g.setLineDash([10,16]);
-  g.beginPath(); g.arc(256,256,212,0,7); g.stroke();
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(52,90), // MEGA COLOSSAL stage for sky leviathan
+  
+  // Add concentric rings for depth
+  g.strokeStyle = 'rgba(233,180,76,.5)'; g.lineWidth = 2;
+  g.beginPath(); g.arc(256,256,200,0,7); g.stroke();
+  g.beginPath(); g.arc(256,256,160,0,7); g.stroke();
+  g.strokeStyle = 'rgba(224,30,55,.4)'; g.lineWidth = 1.5;
+  g.setLineDash([8,12]);
+  g.beginPath(); g.arc(256,256,230,0,7); g.stroke();
+  
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(52,90),
     new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(discC), transparent:true, depthWrite:false}));
-  disc.rotation.x = -Math.PI/2; disc.position.y = -3.5; // way lower stage so sky car POPS huge
+  disc.rotation.x = -Math.PI/2; disc.position.y = -3.5;
   grp.add(disc);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(48,.12,8,240),
-    new THREE.MeshBasicMaterial({color:0xE01E37, transparent:true, opacity:.8, blending:THREE.AdditiveBlending}));
+  
+  // Enhanced glowing ring with multiple layers
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(48,.15,8,240),
+    new THREE.MeshBasicMaterial({color:0xE01E37, transparent:true, opacity:.9, blending:THREE.AdditiveBlending}));
   ring.rotation.x = -Math.PI/2; ring.position.y = .08;
   grp.add(ring);
+  
+  // Inner gold ring
+  const innerRing = new THREE.Mesh(new THREE.TorusGeometry(44,.08,8,200),
+    new THREE.MeshBasicMaterial({color:0xE9B44C, transparent:true, opacity:.7, blending:THREE.AdditiveBlending}));
+  innerRing.rotation.x = -Math.PI/2; innerRing.position.y = .1;
+  grp.add(innerRing);
+  grp.userData.innerRing = innerRing;
   grp.userData.ring = ring;
+  
   return grp;
 }
 
@@ -1647,20 +1808,65 @@ const heroScene = (()=>{
   holder.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x0A0709, .008); // ultra thin fog — let colossus shine
+  scene.fog = new THREE.FogExp2(0x0A0709, .004); // even thinner fog — show studio environment
   const camera = new THREE.PerspectiveCamera(22, innerWidth/innerHeight, .1, 500); // SUPER TIGHT FOV = MASSIVE
   // MEGA COLOSSAL CAM — pulled way up + back to frame sky leviathan
   camera.position.set(0, 9.5, 36);
 
-  /* lights */
-  scene.add(new THREE.HemisphereLight(0x40303a, 0x0a0608, .75));
-  const key = new THREE.DirectionalLight(0xfff0e8, 1.05); key.position.set(-4,6,5); scene.add(key);
-  const rimR = new THREE.SpotLight(0xE01E37, 2.2, 30, .7, .5); rimR.position.set(7,4,-4); scene.add(rimR);
-  const rimC = new THREE.SpotLight(0x8FE8F2, 1.6, 30, .7, .5); rimC.position.set(-7,3.5,-5); scene.add(rimC);
-  const front = new THREE.PointLight(0xE9B44C, .7, 15); front.position.set(-3,1.5,6); scene.add(front);
+  /* lights - enhanced studio setup for black car visibility */
+  // Soft ambient for base illumination
+  scene.add(new THREE.HemisphereLight(0x605060, 0x1a1520, .6));
+  
+  // Strong key light from above-front (main illumination)
+  const key = new THREE.DirectionalLight(0xffffff, 1.8); 
+  key.position.set(-3, 12, 8); 
+  key.castShadow = true;
+  key.shadow.mapSize.width = 2048;
+  key.shadow.mapSize.height = 2048;
+  key.shadow.camera.near = 0.5;
+  key.shadow.camera.far = 50;
+  key.shadow.camera.left = -20;
+  key.shadow.camera.right = 20;
+  key.shadow.camera.top = 20;
+  key.shadow.camera.bottom = -20;
+  scene.add(key);
+  
+  // Fill light (softer, from opposite side)
+  const fill = new THREE.DirectionalLight(0xaabbcc, 0.7);
+  fill.position.set(6, 8, 4);
+  scene.add(fill);
+  
+  // Strong rim light from right (crimson) - defines car silhouette
+  const rimR = new THREE.SpotLight(0xE01E37, 3.5, 45, .6, .4); 
+  rimR.position.set(12, 6, -6); 
+  scene.add(rimR);
+  
+  // Rim light from left (cyan/ghost) - separates from background
+  const rimC = new THREE.SpotLight(0x8FE8F2, 2.8, 40, .6, .4); 
+  rimC.position.set(-10, 5, -8); 
+  scene.add(rimC);
+  
+  // Front accent light (gold) - illuminates front face
+  const front = new THREE.PointLight(0xE9B44C, 1.2, 25); 
+  front.position.set(-4, 4, 12); 
+  scene.add(front);
+  
+  // Under-glow reflection light
+  const underGlow = new THREE.PointLight(0x4a3a50, 0.8, 20);
+  underGlow.position.set(0, -2, 0);
+  scene.add(underGlow);
+  
+  // Top highlight for car roof
+  const topLight = new THREE.SpotLight(0xffffff, 1.5, 35, .5, .3);
+  topLight.position.set(0, 20, 0);
+  scene.add(topLight);
 
   /* stage + car — MEGA COLOSSAL SKY PULL-UP */
   const stage = makeStage(); scene.add(stage);
+  
+  // Add studio environment for better black car visibility
+  const studio = createStudioEnvironment(); scene.add(studio);
+  
   const carPivot = new THREE.Group(); 
   carPivot.scale.setScalar(8.2); // ABSURD LEVIATHAN — car FILLS viewport, pulls up huge
   carPivot.position.z = -4; // pulled forward toward camera
@@ -1723,6 +1929,16 @@ const heroScene = (()=>{
     bfGhost.userData.update(t*(1+st.excite*.8));
     bfRed.userData.update(t*.9);
     stage.userData.ring.material.opacity = .55 + Math.sin(t*2)*.25 + st.excite*.3;
+    // Animate inner ring
+    if (stage.userData.innerRing) {
+      stage.userData.innerRing.material.opacity = .5 + Math.sin(t*2.5)*.3 + st.excite*.2;
+    }
+    // Subtle studio light flicker
+    studio.children.forEach(child => {
+      if (child.isPointLight && child.color.getHex() === 0xE9B44C) {
+        child.intensity = 0.7 + Math.sin(t*3)*0.15;
+      }
+    });
 
     /* exhaust flames pulse with excitement */
     if (car.userData.exhausts) car.userData.exhausts.forEach((f,i)=>{
@@ -1776,16 +1992,34 @@ const liveryScene = (()=>{
   holder.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x0A0709, .01);
+  scene.fog = new THREE.FogExp2(0x0A0709, .006);
   const camera = new THREE.PerspectiveCamera(20, W()/H(), .1, 500); // SUPER TIGHT = HUGE
   camera.position.set(0.8,10.5,24); // pulled way up + back for livery leviathan
 
-  scene.add(new THREE.HemisphereLight(0x453541, 0x0a0608, .9));
-  const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(-5,8,6); scene.add(key);
-  const rim = new THREE.SpotLight(0xE01E37, 2.8, 32, .8, .6); rim.position.set(8,6,-6); scene.add(rim);
-  const fill = new THREE.PointLight(0x8FE8F2, .9, 22); fill.position.set(-6,3,5); scene.add(fill);
+  scene.add(new THREE.HemisphereLight(0x504560, 0x1a1520, .7));
+  // Enhanced key light for black car
+  const key = new THREE.DirectionalLight(0xffffff, 1.6); 
+  key.position.set(-6, 10, 8); 
+  key.castShadow = true;
+  scene.add(key);
+  // Strong rim light (crimson) for silhouette
+  const rim = new THREE.SpotLight(0xE01E37, 4.0, 40, .7, .5); 
+  rim.position.set(10, 8, -8); 
+  scene.add(rim);
+  // Fill light (cyan/ghost)
+  const fill = new THREE.PointLight(0x8FE8F2, 1.2, 28); 
+  fill.position.set(-8, 5, 6); 
+  scene.add(fill);
+  // Front accent
+  const frontL = new THREE.PointLight(0xE9B44C, 1.0, 20);
+  frontL.position.set(-4, 3, 10);
+  scene.add(frontL);
 
   const stage = makeStage(); stage.scale.setScalar(3.8); scene.add(stage); // MEGA colossal stage
+  // Add studio environment for livery scene
+  const liveryStudio = createStudioEnvironment(); 
+  liveryStudio.scale.setScalar(0.6);
+  scene.add(liveryStudio);
   const pivot = new THREE.Group(); scene.add(pivot);
   pivot.position.z = -3;
   pivot.position.x = 0.8;
