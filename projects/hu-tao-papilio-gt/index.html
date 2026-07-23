@@ -1207,6 +1207,7 @@ function loadCar(opts){
       inst.children.forEach(c=>placeholder.add(c));
       placeholder.userData.pending = false;
       placeholder.userData.realObj = inst;
+      placeholder.userData.setLivery = (key)=>inst.userData.setLivery(key);
       // Mark the preloader "GLB" slot as done
       loaded++;
     })
