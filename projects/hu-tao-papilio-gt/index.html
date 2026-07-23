@@ -726,6 +726,11 @@ footer .sig{font-family:var(--font-brush);color:var(--crimson);font-size:1.1rem;
     </div>
     <div class="livery-ctrl" data-reveal>
       <h3>Midnight Lacquer</h3>
+      <button class="swatch" data-livery="original" data-cursor="link">
+        <span class="dots"><i style="background:#888888"></i><i style="background:#EEEEEE"></i><i style="background:#D4AF37"></i></span>
+        <span class="meta"><b>Original GLB</b><small>Show original un-tinted 3D textures</small></span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
       <button class="swatch active" data-livery="crimson" data-cursor="link">
         <span class="dots"><i style="background:#171016"></i><i style="background:#E01E37"></i><i style="background:#E9B44C"></i></span>
         <span class="meta"><b>Crimson Crossing</b><small>Obsidian · crimson · gold pinstripe</small></span>
@@ -1139,6 +1144,7 @@ function glowTexture(inner, outer){
 }
 
 const LIVERIES = {
+  original: {name:'Original GLB',        paint:0xFFFFFF, accent:0xFFFFFF, glow:0xE01E37, tail:0xFF2E4D},
   crimson: {name:'Crimson Crossing',     paint:0x171016, accent:0xE01E37, glow:0xE01E37, tail:0xFF2E4D},
   ghost:   {name:'Ghost Lantern',        paint:0x0C1417, accent:0x8FE8F2, glow:0x4FD8E8, tail:0xE01E37},
   plum:    {name:'Plum Eclipse',         paint:0x1C1118, accent:0xF3A6BF, glow:0xE87AA0, tail:0xE01E37},
@@ -1193,7 +1199,7 @@ function loadCar(opts){
       // current long axis (Y) and rotate so Y becomes world X (forward).
       _fitToFootprint(inst);
       // Wire the livery tint
-      inst.userData.setLivery = (key)=>_tintGltf(inst, LIVERIES[key]);
+      inst.userData.setLivery = (key)=>_tintGltf(inst, key);
       // Apply initial livery
       inst.userData.setLivery('crimson');
       // Swap into the scene graph
@@ -1255,10 +1261,23 @@ function _cloneGltf(root){
   // Re-traverse and give every Mesh a *fresh* material so two scenes can
   // be tinted independently. Skinned meshes aren't expected here.
   clone.traverse(o=>{
-    if (o.isMesh){
-      o.material = Array.isArray(o.material)
-        ? o.material.map(m=>m.clone())
-        : o.material.clone();
+    if (o.isMesh && o.material){
+      if (Array.isArray(o.material)) {
+        o.material = o.material.map(m => {
+          const mClone = m.clone();
+          mClone.userData = mClone.userData || {};
+          mClone.userData.originalColor = m.color ? m.color.clone() : new THREE.Color(1, 1, 1);
+          mClone.userData.originalEmissive = m.emissive ? m.emissive.clone() : new THREE.Color(0, 0, 0);
+          return mClone;
+        });
+      } else {
+        const m = o.material;
+        const mClone = m.clone();
+        mClone.userData = mClone.userData || {};
+        mClone.userData.originalColor = m.color ? m.color.clone() : new THREE.Color(1, 1, 1);
+        mClone.userData.originalEmissive = m.emissive ? m.emissive.clone() : new THREE.Color(0, 0, 0);
+        o.material = mClone;
+      }
     }
   });
   return clone;
@@ -1343,7 +1362,28 @@ function _fitToFootprint(obj){
   obj.updateMatrixWorld(true);
 }
 
-function _tintGltf(obj, livery){
+function _tintGltf(obj, liveryKey){
+  if (!liveryKey) return;
+
+  if (liveryKey === 'original') {
+    obj.traverse(o=>{
+      if (o.isMesh && o.material){
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        mats.forEach(m=>{
+          if (m.userData && m.userData.originalColor) {
+            m.color.copy(m.userData.originalColor);
+          }
+          if (m.userData && m.userData.originalEmissive) {
+            m.emissive.copy(m.userData.originalEmissive);
+          }
+          m.needsUpdate = true;
+        });
+      }
+    });
+    return;
+  }
+
+  const livery = typeof liveryKey === 'string' ? LIVERIES[liveryKey] : liveryKey;
   if (!livery) return;
   const paintCol   = new THREE.Color(livery.paint);
   const accentCol  = new THREE.Color(livery.accent);
@@ -1351,6 +1391,12 @@ function _tintGltf(obj, livery){
     if (!o.isMesh || !o.material) return;
     const mats = Array.isArray(o.material) ? o.material : [o.material];
     mats.forEach(m=>{
+      if (m.userData && m.userData.originalColor) {
+        m.color.copy(m.userData.originalColor);
+      }
+      if (m.userData && m.userData.originalEmissive) {
+        m.emissive.copy(m.userData.originalEmissive);
+      }
       // The GLB uses a single texture + PBR. We tint by setting the
       // baseColorFactor toward the swatch's *accent* color (so the
       // two-tone reads as: warm paint on top, accent hue dominating
