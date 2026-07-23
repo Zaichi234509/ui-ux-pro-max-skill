@@ -382,7 +382,7 @@ section{position:relative;padding:clamp(90px,12vh,150px) clamp(20px,6vw,88px)}
    ========================================================= */
 #livery{background:linear-gradient(180deg,var(--ink),rgba(16,12,20,.9) 50%,var(--ink))}
 .livery-grid{display:grid;grid-template-columns:1.5fr .8fr;gap:clamp(28px,4vw,60px);align-items:stretch}
-.livery-stage{position:relative;border:1px solid var(--border);border-radius:24px;overflow:hidden;min-height:440px;background:radial-gradient(ellipse at 50% 100%,#181016,var(--ink) 75%)}
+.livery-stage{position:relative;border:1px solid var(--border);border-radius:24px;overflow:hidden;min-height:560px;background:radial-gradient(ellipse at 50% 100%,#181016,var(--ink) 75%)}
 #webgl-livery{position:absolute;inset:0}
 .livery-stage .ls-hint{position:absolute;left:24px;bottom:20px;font-family:var(--font-ui);font-size:.58rem;letter-spacing:.32em;text-transform:uppercase;color:var(--dim);display:flex;gap:10px;align-items:center;pointer-events:none}
 .livery-stage .ls-hint svg{width:14px;height:14px}
@@ -1162,7 +1162,8 @@ const LIVERIES = {
 let _glbCarPromise = null; // shared between hero + livery scenes (one fetch)
 let _glbCarObject  = null; // cached THREE.Group, deep-cloned per scene
 const GLB_URL = 'assets/papilio-gt77.glb';
-const TARGET_LENGTH = 4.5; // world units (matches procedural car body)
+const TARGET_LENGTH = 11.0; // SUPER BIG — was 4.5 (now ~2.44x larger) to dominate hero
+const SUPER_SCALE_BOOST = 1.35; // extra multiplier for absolute CHONK
 
 function loadCar(opts){
   const o = Object.assign({paint:0x171016, accent:0xE9B44C, glow:0xE01E37, tail:0xFF2E4D}, opts||{});
@@ -1292,8 +1293,9 @@ function _fitToFootprint(obj){
   if (spanY >= spanX && spanY >= spanZ) longAxis = 'y';
   else if (spanZ >= spanX && spanZ >= spanY) longAxis = 'z';
   const longSpan = (longAxis === 'x' ? spanX : longAxis === 'y' ? spanY : spanZ) || 1;
-  // 4) Uniform scale so longSpan becomes TARGET_LENGTH
-  const s = TARGET_LENGTH / longSpan;
+  // 4) Uniform scale so longSpan becomes TARGET_LENGTH — now SUPER BIGGER
+  const base = TARGET_LENGTH / longSpan;
+  const s = base * (typeof SUPER_SCALE_BOOST !== 'undefined' ? SUPER_SCALE_BOOST : 1.0);
   obj.scale.setScalar(s);
   obj.updateMatrixWorld(true);
   // 5) Rotate the model so its long axis aligns with world +X
@@ -1612,11 +1614,11 @@ function makeStage(){
   g.beginPath(); g.arc(256,256,192,0,7); g.stroke();
   g.strokeStyle = 'rgba(224,30,55,.5)'; g.setLineDash([10,16]);
   g.beginPath(); g.arc(256,256,212,0,7); g.stroke();
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(6.4,64),
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(9.5,64), // SUPER BIGGER stage to match giant car
     new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(discC), transparent:true, depthWrite:false}));
   disc.rotation.x = -Math.PI/2; disc.position.y = .06;
   grp.add(disc);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(5.5,.015,8,120),
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(8.6,.025,8,120),
     new THREE.MeshBasicMaterial({color:0xE01E37, transparent:true, opacity:.8, blending:THREE.AdditiveBlending}));
   ring.rotation.x = -Math.PI/2; ring.position.y = .08;
   grp.add(ring);
@@ -1642,7 +1644,8 @@ const heroScene = (()=>{
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x0A0709, .055);
   const camera = new THREE.PerspectiveCamera(38, innerWidth/innerHeight, .1, 100);
-  camera.position.set(0, 2.1, 14);
+  // SUPER BIGGER CAM — closer and lower to emphasize massive scale
+  camera.position.set(0, 1.55, 12);
 
   /* lights */
   scene.add(new THREE.HemisphereLight(0x40303a, 0x0a0608, .75));
@@ -1651,15 +1654,17 @@ const heroScene = (()=>{
   const rimC = new THREE.SpotLight(0x8FE8F2, 1.6, 30, .7, .5); rimC.position.set(-7,3.5,-5); scene.add(rimC);
   const front = new THREE.PointLight(0xE9B44C, .7, 15); front.position.set(-3,1.5,6); scene.add(front);
 
-  /* stage + car */
+  /* stage + car — SUPER BIGGER */
   const stage = makeStage(); scene.add(stage);
-  const carPivot = new THREE.Group(); scene.add(carPivot);
+  const carPivot = new THREE.Group(); 
+  carPivot.scale.setScalar(1.25); // extra hero boost so GLB dominates
+  scene.add(carPivot);
   const car = loadCar(LIVERIES.crimson); carPivot.add(car);
 
-  /* particles */
-  const embers = makeEmbers(320, {x:9, h:6, z:7}); scene.add(embers);
-  const bfGhost = makeButterflies(26, 0x9BEAF5, {x:6.5,z:5}); scene.add(bfGhost);
-  const bfRed   = makeButterflies(16, 0xFF5468, {x:7.5,z:6}); scene.add(bfRed);
+  /* particles — expanded spread for SUPER BIGGER car */
+  const embers = makeEmbers(420, {x:13, h:8, z:10}); scene.add(embers);
+  const bfGhost = makeButterflies(30, 0x9BEAF5, {x:9.5,z:8}); scene.add(bfGhost);
+  const bfRed   = makeButterflies(20, 0xFF5468, {x:10.5,z:9}); scene.add(bfRed);
 
   /* optional bloom (graceful fallback) */
   let composer = null;
@@ -1672,9 +1677,9 @@ const heroScene = (()=>{
     }
   }catch(e){ composer = null; }
 
-  /* interaction state */
+  /* interaction state — SUPER BIGGER tuned */
   const st = { rotY:.6, rotV:0, auto:.16, dragging:false, px:0, camX:0, camY:0,
-               camZ:14, camZT:14, shake:0, wheelSpin:0, excite:0, visible:true };
+               camZ:12, camZT:12, shake:0, wheelSpin:0, excite:0, visible:true };
   holder.addEventListener('pointerdown', e=>{ st.dragging = true; st.px = e.clientX; });
   addEventListener('pointermove', e=>{
     if (st.dragging){ st.rotV = (e.clientX - st.px)*.006; st.rotY += st.rotV; st.px = e.clientX; }
@@ -1718,9 +1723,9 @@ const heroScene = (()=>{
     const sx = st.shake ? rand(-st.shake,st.shake) : 0;
     const sy = st.shake ? rand(-st.shake,st.shake) : 0;
     camera.position.x = lerp(camera.position.x, st.camX*1.6 + sx, .05);
-    camera.position.y = lerp(camera.position.y, 2.1 - st.camY*0.9 + sy, .05);
+    camera.position.y = lerp(camera.position.y, 1.55 - st.camY*0.9 + sy, .05);
     camera.position.z = st.camZ;
-    camera.lookAt(0,.62,0);
+    camera.lookAt(0,0.95,0); // look higher for super sized car
 
     if (REDUCE){ renderer.render(scene,camera); return; }
     if (composer) composer.render(); else renderer.render(scene,camera);
@@ -1736,7 +1741,7 @@ const heroScene = (()=>{
   return {
     state: st,
     car,
-    dolly(){ gsap.to(st, {camZT: 8.6, duration:2.6, ease:'expo.out'}); },
+    dolly(){ gsap.to(st, {camZT: 5.2, duration:2.6, ease:'expo.out'}); }, // SUPER CLOSE for giant car
     excite(on){ gsap.to(st, {excite: on?1:0, duration:on?1.2:1.6, ease:'power2.out'}); },
     setLivery(k){ car.userData.setLivery(k); }
   };
@@ -1760,16 +1765,19 @@ const liveryScene = (()=>{
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(36, W()/H(), .1, 60);
-  camera.position.set(0,2.0,8.8);
+  camera.position.set(0,1.6,6.2); // SUPER BIGGER livery cam — closer for massive car
 
   scene.add(new THREE.HemisphereLight(0x453541, 0x0a0608, .9));
   const key = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(-4,6,5); scene.add(key);
   const rim = new THREE.SpotLight(0xE01E37, 2.4, 26, .8, .6); rim.position.set(6,4,-4); scene.add(rim);
   const fill = new THREE.PointLight(0x8FE8F2, .7, 18); fill.position.set(-5,2,4); scene.add(fill);
 
-  const stage = makeStage(); stage.scale.setScalar(.82); scene.add(stage);
+  const stage = makeStage(); stage.scale.setScalar(1.25); scene.add(stage); // bigger stage for huge car
   const pivot = new THREE.Group(); scene.add(pivot);
-  const car = loadCar(LIVERIES.crimson); pivot.add(car);
+  const car = loadCar(LIVERIES.crimson); 
+  // extra boost specifically for livery stage so car fills container
+  pivot.scale.setScalar(1.15);
+  pivot.add(car);
 
   const st = {rotY:-.5, rotV:0, dragging:false, px:0, visible:true};
   holder.addEventListener('pointerdown', e=>{st.dragging=true; st.px=e.clientX;});
