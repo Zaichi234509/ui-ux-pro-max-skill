@@ -1344,35 +1344,9 @@ function _fitToFootprint(obj){
 }
 
 function _tintGltf(obj, livery){
-  if (!livery) return;
-  const paintCol   = new THREE.Color(livery.paint);
-  const accentCol  = new THREE.Color(livery.accent);
-  obj.traverse(o=>{
-    if (!o.isMesh || !o.material) return;
-    const mats = Array.isArray(o.material) ? o.material : [o.material];
-    mats.forEach(m=>{
-      // The GLB uses a single texture + PBR. We tint by setting the
-      // baseColorFactor toward the swatch's *accent* color (so the
-      // two-tone reads as: warm paint on top, accent hue dominating
-      // on the body's lower third via the existing UV atlas).
-      // We keep some texture influence so the model still reads as
-      // a detailed hypercar rather than a flat-colored blob.
-      if (m.color){
-        m.color.lerpColors(paintCol, accentCol, 0.45);
-        // gently nudge brightness toward the livery's paint
-        const c = m.color;
-        c.r = c.r * 0.85 + paintCol.r * 0.15;
-        c.g = c.g * 0.85 + paintCol.g * 0.15;
-        c.b = c.b * 0.85 + paintCol.b * 0.15;
-      }
-      // Slight emissive tint from accent so the car "breathes" the
-      // livery's signature color in dim lighting.
-      if (m.emissive){
-        m.emissive.copy(accentCol).multiplyScalar(0.08);
-      }
-      m.needsUpdate = true;
-    });
-  });
+  // Keep the car's original colors - no tinting applied
+  // The livery colors are used for accents/lighting effects instead
+  return;
 }
 
 /* --- procedural hypercar --- */
