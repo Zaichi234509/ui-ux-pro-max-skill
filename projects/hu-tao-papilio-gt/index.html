@@ -175,17 +175,19 @@ input{cursor:none}
 @media (max-width:900px){#nav ul{display:none}}
 
 /* =========================================================
-   HERO
+   HERO — MEGA COLOSSAL CAR EDITION
    ========================================================= */
-#hero{position:relative;height:100vh;min-height:640px;z-index:2;overflow:hidden}
-#webgl{position:absolute;inset:0;z-index:0;opacity:0;transform:scale(1.06)}
+#hero{position:relative;height:112vh;min-height:780px;z-index:2;overflow:hidden}
+#webgl{position:absolute;inset:-8% 0 -5% 0;z-index:0;opacity:0;transform:scale(1.12)}
 #hero .vignette{position:absolute;inset:0;z-index:2;pointer-events:none;
-  background:radial-gradient(ellipse at 50% 42%,transparent 30%,rgba(10,7,9,.62) 78%,var(--ink) 100%);}
+  background:radial-gradient(ellipse at 62% 36%,transparent 18%,rgba(10,7,9,.42) 56%,rgba(10,7,9,.82) 82%,var(--ink) 100%);}
 #hero .hero-inner{
   position:relative;z-index:3;height:100%;
   display:flex;flex-direction:column;justify-content:flex-end;
-  padding:0 clamp(20px,5vw,72px) clamp(84px,11vh,120px);
+  padding:0 clamp(20px,5vw,72px) clamp(92px,12vh,136px);
   pointer-events:none;
+  /* lift text slightly so colossal car has sky runway above */
+  transform:translateY(0);
 }
 #hero .hero-inner *{pointer-events:none}
 #hero .hero-inner a,#hero .hero-inner button{pointer-events:auto}
@@ -194,14 +196,14 @@ input{cursor:none}
 .eyebrow .line{width:44px;height:1px;background:var(--gold);display:inline-block}
 .eyebrow .zh{font-family:var(--font-brush);letter-spacing:.2em;color:var(--crimson-hi);font-size:.9rem;text-transform:none}
 
-.hero-title{font-family:var(--font-display);font-weight:900;font-size:var(--fs-hero);line-height:.92;letter-spacing:-.015em;text-transform:uppercase}
+.hero-title{font-family:var(--font-display);font-weight:900;font-size:var(--fs-hero);line-height:.92;letter-spacing:-.015em;text-transform:uppercase;text-shadow:0 4px 38px rgba(0,0,0,.9),0 0 80px rgba(10,7,9,.85)}
 .hero-title .row{display:block;overflow:hidden;padding-bottom:.06em}
 .hero-title .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.06em}
 .hero-title .ch{display:inline-block;transform:translateY(120%) rotate(6deg);will-change:transform}
 .hero-title .solid{font-style:normal;color:var(--text)}
 .hero-title .ital{font-style:italic;background:linear-gradient(100deg,var(--crimson-hi) 10%,var(--crimson) 45%,var(--gold) 95%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 26px rgba(224,30,55,.35))}
 
-.hero-sub{max-width:520px;margin-top:22px;color:var(--muted);font-size:clamp(.92rem,1.2vw,1.05rem);line-height:1.75}
+.hero-sub{max-width:520px;margin-top:22px;color:var(--muted);font-size:clamp(.92rem,1.2vw,1.05rem);line-height:1.75;text-shadow:0 2px 18px rgba(0,0,0,.85),0 0 40px rgba(10,7,9,.9)}
 .hero-sub b{color:var(--text);font-weight:500}
 .hero-sub .brush{font-family:var(--font-brush);color:var(--gold);font-size:1.15em}
 
@@ -382,7 +384,7 @@ section{position:relative;padding:clamp(90px,12vh,150px) clamp(20px,6vw,88px)}
    ========================================================= */
 #livery{background:linear-gradient(180deg,var(--ink),rgba(16,12,20,.9) 50%,var(--ink))}
 .livery-grid{display:grid;grid-template-columns:1.5fr .8fr;gap:clamp(28px,4vw,60px);align-items:stretch}
-.livery-stage{position:relative;border:1px solid var(--border);border-radius:24px;overflow:hidden;min-height:920px;background:radial-gradient(ellipse at 50% 18%,#2A1620 0%,#22131A 20%,#181016 48%,var(--ink) 82%)}
+.livery-stage{position:relative;border:1px solid var(--border);border-radius:24px;overflow:hidden;min-height:780px;background:radial-gradient(ellipse at 50% 22%,#3A2030 0%,#22131A 22%,#181016 52%,var(--ink) 88%)}
 #webgl-livery{position:absolute;inset:0}
 .livery-stage .ls-hint{position:absolute;left:24px;bottom:20px;font-family:var(--font-ui);font-size:.58rem;letter-spacing:.32em;text-transform:uppercase;color:var(--dim);display:flex;gap:10px;align-items:center;pointer-events:none}
 .livery-stage .ls-hint svg{width:14px;height:14px}
@@ -1162,10 +1164,10 @@ const LIVERIES = {
 let _glbCarPromise = null; // shared between hero + livery scenes (one fetch)
 let _glbCarObject  = null; // cached THREE.Group, deep-cloned per scene
 const GLB_URL = 'assets/papilio-gt77.glb';
-const TARGET_LENGTH = 32.0; // ULTRA COLOSSAL — was 4.5, now 7x, plus boosts -> ~300+ units effective
-const SUPER_SCALE_BOOST = 3.5; // MAXIMUM MONSTER CHONK
-const HERO_Y_LIFT = 6.5; // car FLIES high above stage
-const LIVERY_Y_LIFT = 5.0;
+const TARGET_LENGTH = 68.0; // MEGA COLOSSAL — 15x original, sky leviathan mode
+const SUPER_SCALE_BOOST = 8.5; // INSANE CHONK — fills viewport
+const HERO_Y_LIFT = 14.5; // pulled WAY UP into sky — god-tier floating
+const LIVERY_Y_LIFT = 11.0;
 
 function loadCar(opts){
   const o = Object.assign({paint:0x171016, accent:0xE9B44C, glow:0xE01E37, tail:0xFF2E4D}, opts||{});
@@ -1333,8 +1335,8 @@ function _fitToFootprint(obj){
   const fminZ = p(fzs, lo), fmaxZ = p(fzs, hi);
   const centerX = (fminX + fmaxX) / 2;
   const centerZ = (fminZ + fmaxZ) / 2;
-  // Translate so model floats WAY ABOVE ground — GO UP MORE
-  const lift = 2.8; // extreme float base
+  // Translate so model floats WAY ABOVE ground — ULTRA SKY MODE
+  const lift = 6.5; // insane float base — car is flying
   obj.position.x = -centerX;
   obj.position.y = -fminY + lift;
   obj.position.z = -centerZ;
@@ -1617,11 +1619,11 @@ function makeStage(){
   g.beginPath(); g.arc(256,256,192,0,7); g.stroke();
   g.strokeStyle = 'rgba(224,30,55,.5)'; g.setLineDash([10,16]);
   g.beginPath(); g.arc(256,256,212,0,7); g.stroke();
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(26,80), // ULTRA COLOSSAL stage for sky-lewaithan
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(52,90), // MEGA COLOSSAL stage for sky leviathan
     new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(discC), transparent:true, depthWrite:false}));
-  disc.rotation.x = -Math.PI/2; disc.position.y = -1.5; // lower stage so floating car pops
+  disc.rotation.x = -Math.PI/2; disc.position.y = -3.5; // way lower stage so sky car POPS huge
   grp.add(disc);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(24,.06,8,200),
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(48,.12,8,240),
     new THREE.MeshBasicMaterial({color:0xE01E37, transparent:true, opacity:.8, blending:THREE.AdditiveBlending}));
   ring.rotation.x = -Math.PI/2; ring.position.y = .08;
   grp.add(ring);
@@ -1645,10 +1647,10 @@ const heroScene = (()=>{
   holder.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x0A0709, .018); // thinner fog for huge car
-  const camera = new THREE.PerspectiveCamera(28, innerWidth/innerHeight, .1, 300); // tighter FOV = BIGGER
-  // ULTRA COLOSSAL CAM — high up staring at SKY LEVIATHAN
-  camera.position.set(0, 5.5, 22);
+  scene.fog = new THREE.FogExp2(0x0A0709, .008); // ultra thin fog — let colossus shine
+  const camera = new THREE.PerspectiveCamera(22, innerWidth/innerHeight, .1, 500); // SUPER TIGHT FOV = MASSIVE
+  // MEGA COLOSSAL CAM — pulled way up + back to frame sky leviathan
+  camera.position.set(0, 9.5, 36);
 
   /* lights */
   scene.add(new THREE.HemisphereLight(0x40303a, 0x0a0608, .75));
@@ -1657,17 +1659,19 @@ const heroScene = (()=>{
   const rimC = new THREE.SpotLight(0x8FE8F2, 1.6, 30, .7, .5); rimC.position.set(-7,3.5,-5); scene.add(rimC);
   const front = new THREE.PointLight(0xE9B44C, .7, 15); front.position.set(-3,1.5,6); scene.add(front);
 
-  /* stage + car — ULTRA COLOSSAL + SKY HIGH */
+  /* stage + car — MEGA COLOSSAL SKY PULL-UP */
   const stage = makeStage(); scene.add(stage);
   const carPivot = new THREE.Group(); 
-  carPivot.scale.setScalar(3.8); // ULTRA MONSTER — car is LEVIATHAN covering screen
+  carPivot.scale.setScalar(8.2); // ABSURD LEVIATHAN — car FILLS viewport, pulls up huge
+  carPivot.position.z = -4; // pulled forward toward camera
+  carPivot.position.x = 1.5; // slight off-center for drama
   scene.add(carPivot);
   const car = loadCar(LIVERIES.crimson); carPivot.add(car);
 
   /* particles — GIGANTIC spread for COLOSSAL car */
-  const embers = makeEmbers(720, {x:32, h:20, z:28}); scene.add(embers);
-  const bfGhost = makeButterflies(55, 0x9BEAF5, {x:24,z:20}); scene.add(bfGhost);
-  const bfRed   = makeButterflies(42, 0xFF5468, {x:28,z:24}); scene.add(bfRed);
+  const embers = makeEmbers(900, {x:52, h:34, z:44}); scene.add(embers);
+  const bfGhost = makeButterflies(75, 0x9BEAF5, {x:38,z:32}); scene.add(bfGhost);
+  const bfRed   = makeButterflies(68, 0xFF5468, {x:42,z:36}); scene.add(bfRed);
 
   /* optional bloom (graceful fallback) */
   let composer = null;
@@ -1680,10 +1684,10 @@ const heroScene = (()=>{
     }
   }catch(e){ composer = null; }
 
-  /* interaction state — ULTRA GO UP TO SKY */
-  const st = { rotY:.6, rotV:0, auto:.11, dragging:false, px:0, camX:0, camY:0,
-               camZ:22, camZT:22, shake:0, wheelSpin:0, excite:0, visible:true,
-               baseY: typeof HERO_Y_LIFT !== 'undefined' ? HERO_Y_LIFT : 6.5 };
+  /* interaction state — MEGA SKY GOD MODE */
+  const st = { rotY:.6, rotV:0, auto:.09, dragging:false, px:0, camX:0, camY:0,
+               camZ:36, camZT:36, shake:0, wheelSpin:0, excite:0, visible:true,
+               baseY: typeof HERO_Y_LIFT !== 'undefined' ? HERO_Y_LIFT : 14.5 };
   holder.addEventListener('pointerdown', e=>{ st.dragging = true; st.px = e.clientX; });
   addEventListener('pointermove', e=>{
     if (st.dragging){ st.rotV = (e.clientX - st.px)*.006; st.rotY += st.rotV; st.px = e.clientX; }
@@ -1704,13 +1708,16 @@ const heroScene = (()=>{
 
     if (!st.dragging){ st.rotV *= .96; st.rotY += st.rotV + st.auto*dt*(1+st.excite*2.2); }
     carPivot.rotation.y = st.rotY;
-    // ULTRA GO UP: sky-high floating monument
-    carPivot.position.y = (st.baseY||6.5) + Math.sin(t*0.85)*0.85 + st.excite*Math.sin(t*32)*0.18;
+    // MEGA GO UP: sky-high floating monument — pulled WAY up
+    const base = st.baseY||14.5;
+    carPivot.position.y = base + Math.sin(t*0.72)*1.2 + st.excite*Math.sin(t*32)*0.28;
+    // keep slight X pull for hero framing
+    carPivot.position.z = -4 + Math.sin(t*0.3)*0.6;
 
     car.userData.wheels.forEach(w=>{ w.rotation.z -= st.wheelSpin; });
     st.wheelSpin = lerp(st.wheelSpin, st.excite*.4, .03);
 
-    car.userData.wing.rotation.z = Math.sin(t*.8)*.05 - st.excite*.12;
+    if (car.userData.wing) car.userData.wing.rotation.z = Math.sin(t*.8)*.05 - st.excite*.12;
 
     embers.material.uniforms.uTime.value = t*(1+st.excite*1.6);
     bfGhost.userData.update(t*(1+st.excite*.8));
@@ -1718,19 +1725,19 @@ const heroScene = (()=>{
     stage.userData.ring.material.opacity = .55 + Math.sin(t*2)*.25 + st.excite*.3;
 
     /* exhaust flames pulse with excitement */
-    car.userData.exhausts.forEach((f,i)=>{
+    if (car.userData.exhausts) car.userData.exhausts.forEach((f,i)=>{
       const s = st.excite * (.5 + Math.abs(Math.sin(t*30+i*2))*.9);
       f.scale.setScalar(Math.max(.001, s));
     });
 
-    /* camera: mouse parallax + dolly + shake */
+    /* camera: mouse parallax + dolly + shake — framing MEGA car */
     st.camZ = lerp(st.camZ, st.camZT, .035);
     const sx = st.shake ? rand(-st.shake,st.shake) : 0;
     const sy = st.shake ? rand(-st.shake,st.shake) : 0;
-    camera.position.x = lerp(camera.position.x, st.camX*2.8 + sx, .05);
-    camera.position.y = lerp(camera.position.y, 5.5 + st.baseY*0.35 - st.camY*1.4 + sy, .05);
+    camera.position.x = lerp(camera.position.x, 1.5 + st.camX*3.5 + sx, .06);
+    camera.position.y = lerp(camera.position.y, 10.5 + base*0.42 - st.camY*1.8 + sy, .05);
     camera.position.z = st.camZ;
-    camera.lookAt(0, st.baseY + 1.8, 0); // stare up at sky leviathan
+    camera.lookAt(1.2, base + 2.8, -2); // stare UP at sky leviathan
 
     if (REDUCE){ renderer.render(scene,camera); return; }
     if (composer) composer.render(); else renderer.render(scene,camera);
@@ -1746,7 +1753,7 @@ const heroScene = (()=>{
   return {
     state: st,
     car,
-    dolly(){ gsap.to(st, {camZT: 10.5, duration:3.0, ease:'expo.out'}); }, // ULTRA CLOSE for COLOSSAL sky car
+    dolly(){ gsap.to(st, {camZT: 22, duration:3.2, ease:'expo.out'}); }, // dramatic pull-up reveal for MEGA car
     excite(on){ gsap.to(st, {excite: on?1:0, duration:on?1.2:1.6, ease:'power2.out'}); },
     setLivery(k){ car.userData.setLivery(k); }
   };
@@ -1769,19 +1776,22 @@ const liveryScene = (()=>{
   holder.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(26, W()/H(), .1, 150); // tighter FOV = even bigger
-  camera.position.set(0,6.2,12.5); // ULTRA high livery cam — looks up at sky monster
+  scene.fog = new THREE.FogExp2(0x0A0709, .01);
+  const camera = new THREE.PerspectiveCamera(20, W()/H(), .1, 500); // SUPER TIGHT = HUGE
+  camera.position.set(0.8,10.5,24); // pulled way up + back for livery leviathan
 
   scene.add(new THREE.HemisphereLight(0x453541, 0x0a0608, .9));
-  const key = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(-4,6,5); scene.add(key);
-  const rim = new THREE.SpotLight(0xE01E37, 2.4, 26, .8, .6); rim.position.set(6,4,-4); scene.add(rim);
-  const fill = new THREE.PointLight(0x8FE8F2, .7, 18); fill.position.set(-5,2,4); scene.add(fill);
+  const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(-5,8,6); scene.add(key);
+  const rim = new THREE.SpotLight(0xE01E37, 2.8, 32, .8, .6); rim.position.set(8,6,-6); scene.add(rim);
+  const fill = new THREE.PointLight(0x8FE8F2, .9, 22); fill.position.set(-6,3,5); scene.add(fill);
 
-  const stage = makeStage(); stage.scale.setScalar(2.4); scene.add(stage); // ULTRA colossal stage
+  const stage = makeStage(); stage.scale.setScalar(3.8); scene.add(stage); // MEGA colossal stage
   const pivot = new THREE.Group(); scene.add(pivot);
+  pivot.position.z = -3;
+  pivot.position.x = 0.8;
   const car = loadCar(LIVERIES.crimson); 
-  // ULTRA COLOSSAL livery — car BURSTS out of container
-  pivot.scale.setScalar(3.2);
+  // MEGA COLOSSAL livery — car BURSTS out, pulls up HUGE
+  pivot.scale.setScalar(6.8);
   pivot.add(car);
 
   const st = {rotY:-.5, rotV:0, dragging:false, px:0, visible:true};
@@ -1795,13 +1805,15 @@ const liveryScene = (()=>{
     requestAnimationFrame(frame);
     if (!st.visible) return;
     const dt = Math.min(clock.getDelta()||.016,.05), t = clock.elapsedTime;
-    if (!st.dragging){ st.rotV*=.94; st.rotY += st.rotV + .22*dt; }
+    if (!st.dragging){ st.rotV*=.94; st.rotY += st.rotV + .18*dt; }
     pivot.rotation.y = st.rotY;
-    // ULTRA GO UP in livery — sky god display
-    const lLift = typeof LIVERY_Y_LIFT !== 'undefined' ? LIVERY_Y_LIFT : 5.0;
-    pivot.position.y = lLift + Math.sin(t*0.9)*0.6;
-    car.userData.wheels.forEach(w=> w.rotation.z -= .01);
-    stage.userData.ring.material.opacity = .5 + Math.sin(t*2)*.25;
+    // MEGA GO UP in livery — pulled way up into sky
+    const lLift = typeof LIVERY_Y_LIFT !== 'undefined' ? LIVERY_Y_LIFT : 11.0;
+    pivot.position.y = lLift + Math.sin(t*0.72)*0.85;
+    if (car.userData.wheels) car.userData.wheels.forEach(w=> w.rotation.z -= .01);
+    stage.userData.ring.material.opacity = .55 + Math.sin(t*2)*.25;
+    // camera looks up at monster
+    camera.lookAt(0.8, lLift+2.5, -2);
     renderer.render(scene,camera);
   })();
 
