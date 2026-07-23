@@ -4,8 +4,15 @@ import { motion } from 'framer-motion'
 export default function Cursor() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
   useEffect(() => {
+    // Detect touch device — hide custom cursor on touch/mobile
+    const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches
+    setIsTouchDevice(isTouch)
+
+    if (isTouch) return
+
     const updateMousePosition = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
     }
@@ -34,10 +41,13 @@ export default function Cursor() {
     }
   }, [])
 
+  // Don't render cursor on touch devices
+  if (isTouchDevice) return null
+
   return (
     <>
       <motion.div
-        className="fixed top-0 left-0 w-2 h-2 bg-[#d9423e] rounded-full pointer-events-none z-[100] mix-blend-screen"
+        className="custom-cursor fixed top-0 left-0 w-2 h-2 bg-[#d9423e] rounded-full pointer-events-none z-[100] mix-blend-screen"
         animate={{
           x: mousePosition.x - 4,
           y: mousePosition.y - 4,
@@ -46,7 +56,7 @@ export default function Cursor() {
         transition={{ type: "tween", ease: "backOut", duration: 0.1 }}
       />
       <motion.div
-        className="fixed top-0 left-0 w-10 h-10 border border-[#c39a58]/50 rounded-full pointer-events-none z-[99]"
+        className="custom-cursor fixed top-0 left-0 w-10 h-10 border border-[#c39a58]/50 rounded-full pointer-events-none z-[99]"
         animate={{
           x: mousePosition.x - 20,
           y: mousePosition.y - 20,

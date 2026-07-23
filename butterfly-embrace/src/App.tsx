@@ -17,8 +17,19 @@ function App() {
     return () => document.removeEventListener('contextmenu', handleContextMenu)
   }, [])
 
+  // Prevent horizontal scroll
+  useEffect(() => {
+    const preventHorizontalScroll = (e: WheelEvent) => {
+      if (e.deltaX !== 0) {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('wheel', preventHorizontalScroll, { passive: false })
+    return () => window.removeEventListener('wheel', preventHorizontalScroll)
+  }, [])
+
   return (
-    <div className="w-full h-full bg-black">
+    <div className="w-full h-full bg-black overflow-x-hidden">
       <LoadingScreen />
       <Cursor />
       
@@ -33,6 +44,7 @@ function App() {
         camera={{ position: [0, 2, 10], fov: 45 }}
         gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
         dpr={[1, 2]}
+        style={{ touchAction: 'none' }}
       >
         <color attach="background" args={['#050505']} />
         <fog attach="fog" args={['#050505', 10, 30]} />
